@@ -110,6 +110,13 @@
       font-weight: 700;
       margin-right: .4rem;
     }
+    .gloss-bubble .pron {
+      display: inline-block;
+      font-size: .85rem;
+      margin-left: .25rem;
+      color: rgba(255,255,255,.75);
+      font-weight: 600;
+    }
     .gloss-bubble .tone {
       opacity: .9;
     }
@@ -640,35 +647,107 @@
   <script>
   /* —— GLOSSARY: edit freely (Brooklyn-teacher tone, classroom-clean) ——— */
   const GLOSSARY = {
-    "Lenape": "The Native nation whose homeland included NYC before Europeans showed up. Think: the original New Yorkers.",
-    "Manahatta": "Old Lenape name for the island—yep, that’s Manhattan before it was Manhattan.",
-    "New Amsterdam": "The Dutch version of NYC before it got the name New York.",
-    "forced migration": "People pushed to move—not a road trip, more like ‘you gotta go or else.’",
-    "Wickquasgeck": "Lenape footpath that basically became Broadway. The city is built on older routes.",
-    "treaties": "Official agreements between groups or governments—on paper, with rules (even if they weren’t respected).",
-    "federally recognized": "The U.S. government officially says ‘this is a tribe.’ That status affects rights and resources.",
-    "assimilate": "Blend into the majority culture—act, dress, and talk like them to be accepted.",
-    "stigma": "A social mark—people judge you for it, so folks hide parts of themselves.",
-    "memorial": "A structure meant to honor history, but it can still tell the story wrong.",
-    "inaccuracies": "Parts that aren’t correct—history can get messy or biased.",
-    "perpetuating": "Keeping a story going—true or not—by repeating it.",
-    "fabrication": "A made-up piece—something that sounds real but isn’t.",
-    "plaque": "A metal sign on a wall or rock that ‘explains’ history in like three sentences.",
-    "council": "Leaders meeting to make decisions—like a city board back then.",
-    "indigenous": "The people native to a place—the first communities there.",
-    "heritage": "What gets passed down—culture, language, traditions, stories.",
-    "descendants": "Kids of kids of kids—future generations in a family or people.",
-    "shared use": "We can both use this land—doesn’t mean ‘we sold it forever.’",
-    "Lenapehoking": "The Lenape homeland—NY, NJ, parts of PA and DE. Big area, not just Manhattan.",
-    "spiritual practices": "Ways people connect with the sacred—ceremony, song, prayer.",
-    "ceremonies": "Organized traditions to honor people, the land, and ancestors.",
-    "endangered (language)": "Not many speakers left—if folks don’t learn it, it could fade out.",
-    "dictionary (Lenape Talking Dictionary)": "Online tool with words + audio, to keep language alive."
+    "Lenape": {
+      pron: "/leh-NAH-pay/",
+      def: "The Native nation whose homeland included NYC before Europeans showed up. Think: the original New Yorkers."
+    },
+    "Manahatta": {
+      pron: "/man-uh-HAT-uh/",
+      def: "Old Lenape name for the island—yep, that’s Manhattan before it was Manhattan."
+    },
+    "New Amsterdam": {
+      pron: "/noo AM-stur-dam/",
+      def: "The Dutch version of NYC before it got the name New York."
+    },
+    "forced migration": {
+      pron: "/forst mye-GRAY-shun/",
+      def: "People pushed to move—not a road trip, more like ‘you gotta go or else.’"
+    },
+    "Wickquasgeck": {
+      pron: "/wick-KWAH-sheck/",
+      def: "Lenape footpath that basically became Broadway. The city is built on older routes."
+    },
+    "treaties": {
+      pron: "/TREE-teez/",
+      def: "Official agreements between groups or governments—on paper, with rules (even if they weren’t respected)."
+    },
+    "federally recognized": {
+      pron: "/FED-ur-uh-lee REK-ug-nized/",
+      def: "The U.S. government officially says ‘this is a tribe.’ That status affects rights and resources."
+    },
+    "assimilate": {
+      pron: "/uh-SIM-uh-late/",
+      def: "Blend into the majority culture—act, dress, and talk like them to be accepted."
+    },
+    "stigma": {
+      pron: "/STIG-muh/",
+      def: "A social mark—people judge you for it, so folks hide parts of themselves."
+    },
+    "memorial": {
+      pron: "/muh-MOR-ee-uhl/",
+      def: "A structure meant to honor history, but it can still tell the story wrong."
+    },
+    "inaccuracies": {
+      pron: "/in-AK-yuh-ruh-seez/",
+      def: "Parts that aren’t correct—history can get messy or biased."
+    },
+    "perpetuating": {
+      pron: "/per-PETCH-oo-ay-ting/",
+      def: "Keeping a story going—true or not—by repeating it."
+    },
+    "fabrication": {
+      pron: "/fab-ri-KAY-shun/",
+      def: "A made-up piece—something that sounds real but isn’t."
+    },
+    "plaque": {
+      pron: "/plak/",
+      def: "A metal sign on a wall or rock that ‘explains’ history in like three sentences."
+    },
+    "council": {
+      pron: "/KOWN-suhl/",
+      def: "Leaders meeting to make decisions—like a city board back then."
+    },
+    "indigenous": {
+      pron: "/in-DI-jen-us/",
+      def: "The people native to a place—the first communities there."
+    },
+    "heritage": {
+      pron: "/HAIR-uh-tij/",
+      def: "What gets passed down—culture, language, traditions, stories."
+    },
+    "descendants": {
+      pron: "/dih-SEND-ents/",
+      def: "Kids of kids of kids—future generations in a family or people."
+    },
+    "shared use": {
+      pron: "/SHARED yoos/",
+      def: "We can both use this land—doesn’t mean ‘we sold it forever.’"
+    },
+    "Lenapehoking": {
+      pron: "/leh-NAH-pay-HO-king/",
+      def: "The Lenape homeland—NY, NJ, parts of PA and DE. Big area, not just Manhattan."
+    },
+    "spiritual practices": {
+      pron: "/SPIR-ih-choo-uhl PRAK-tis-iz/",
+      def: "Ways people connect with the sacred—ceremony, song, prayer."
+    },
+    "ceremonies": {
+      pron: "/SARE-uh-moh-neez/",
+      def: "Organized traditions to honor people, the land, and ancestors."
+    },
+    "endangered (language)": {
+      pron: "/en-DANE-jerd/",
+      def: "Not many speakers left—if folks don’t learn it, it could fade out."
+    },
+    "dictionary (Lenape Talking Dictionary)": {
+      pron: "/DIK-shuh-ner-ee/",
+      def: "Online tool with words + audio, to keep language alive."
+    }
   };
 
   /* —— which words to tag (include common variants & capitalization) —— */
   const GLOSSARY_MAP = Object.fromEntries(
-    Object.entries(GLOSSARY).map(([term, def]) => [term.toLowerCase(), def])
+    Object.entries(GLOSSARY).map(([term, entry]) => [term.toLowerCase(), entry])
   );
   const GLOSSARY_TERMS = Object.keys(GLOSSARY_MAP);
 
@@ -742,12 +821,14 @@
   }
   function showBubbleFor(el) {
     const key = (el.dataset.key || el.textContent || "").toLowerCase();
-    const def = GLOSSARY_MAP[key];
-    if (!def) return hideBubble();
+    const entry = GLOSSARY_MAP[key];
+    if (!entry) return hideBubble();
+    const { def, pron } = entry;
 
     const bubble = ensureBubble();
     bubble.innerHTML = `
       <span class="term">${el.dataset.term || key}</span>
+      ${pron ? `<span class="pron">${pron}</span>` : ""}
       <span class="tone">${def}</span>
       <span class="subtle">Tap word again or press Esc to dismiss.</span>
     `;
