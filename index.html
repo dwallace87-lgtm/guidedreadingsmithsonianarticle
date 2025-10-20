@@ -229,6 +229,7 @@
             <label class="block my-1"><input type="radio" name="q1" value="d"> The original Lenape names for all major streets are still used in NYC today.</label>
           </fieldset>
           <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q1">Attempts: 0</p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -253,6 +254,7 @@
             <label class="block my-1"><input type="radio" name="q2" value="d"> Lenape leaders in Oklahoma have stated they have no interest in their history.</label>
           </fieldset>
           <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q2">Attempts: 0</p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -277,6 +279,7 @@
             <label class="block my-1"><input type="radio" name="q3" value="d"> European settlers started to adopt the traditional clothing of the Lenape people.</label>
           </fieldset>
           <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q3">Attempts: 0</p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -301,6 +304,7 @@
             <label class="block my-1"><input type="radio" name="q4" value="d"> The deal was only about trading furs and had nothing at all to do with the land.</label>
           </fieldset>
           <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q4">Attempts: 0</p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -333,6 +337,7 @@
             <label class="block my-1"><input type="radio" name="q5" value="d"> Cultural camps and the Lenape Talking Dictionary preserve traditions and language.</label>
           </fieldset>
           <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q5">Attempts: 0</p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -341,6 +346,30 @@
         *Editor’s note, October 8, 2018: The <strong>Ramapough</strong> are recognized by New Jersey, not the state of Delaware.
       </p>
     </article>
+
+    <section class="mt-12 p-6 sm:p-8 bg-purple-50 border border-purple-200 rounded-xl shadow-inner">
+      <h3 class="text-2xl font-bold text-purple-900">SEL Reflection &amp; R.A.C.E. Response</h3>
+      <p class="mt-3 text-gray-800">
+        Take a mindful pause to connect with the Lenape story and with your own community. Respond to the prompt below using the
+        <strong>R.A.C.E. strategy</strong>—<strong>R</strong>estate the question, <strong>A</strong>nswer it clearly, <strong>C</strong>ite evidence from the article, and <strong>E</strong>xplain how that evidence shows your understanding and feelings.
+      </p>
+      <p class="mt-2 text-gray-700">
+        Prompt: <em>How does learning about the Lenape people’s resilience and care for their homeland influence the way you support and empathize with others in your life?</em>
+      </p>
+
+      <form id="submissionForm" class="mt-4 space-y-4" novalidate>
+        <label class="block">
+          <span class="text-sm font-semibold text-gray-700">Write your R.A.C.E. paragraph below (no copy or paste allowed):</span>
+          <textarea id="reflectionResponse" class="mt-2 w-full rounded-lg border border-purple-200 focus:border-purple-500 focus:ring-purple-500 p-3 shadow-sm" rows="8" placeholder="Restate the prompt, answer it, cite a specific detail from the article, and explain how it connects to your own actions." required></textarea>
+        </label>
+        <p class="text-xs text-gray-600">Typing only—pasting is disabled to make sure this is your own thinking.</p>
+        <div class="flex items-center justify-between gap-4 flex-col sm:flex-row">
+          <p class="text-sm text-gray-700">Your work stays saved on this Chromebook until you press Submit.</p>
+          <button type="submit" class="nx-btn px-4 py-2 rounded-md shadow">Submit All Work</button>
+        </div>
+        <p id="submitStatus" class="text-sm" role="status" aria-live="polite"></p>
+      </form>
+    </section>
   </div>
 
   <footer class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-500">
@@ -371,6 +400,33 @@
     const resetBtn = document.getElementById("resetProgress");
 
     const progress = JSON.parse(localStorage.getItem(KEY) || "{}");
+
+    function ensureProgressStructures() {
+      if (!progress || typeof progress !== "object") return;
+      if (!progress.attempts || typeof progress.attempts !== "object") progress.attempts = {};
+      if (!progress.responses || typeof progress.responses !== "object") progress.responses = {};
+    }
+
+    ensureProgressStructures();
+
+    function saveProgress() {
+      ensureProgressStructures();
+      localStorage.setItem(KEY, JSON.stringify(progress));
+    }
+
+    const reflectionForm = document.getElementById("submissionForm");
+    const reflectionField = document.getElementById("reflectionResponse");
+    const submitStatus = document.getElementById("submitStatus");
+
+    function updateAttemptCounters() {
+      document.querySelectorAll('.gate').forEach(gate => {
+        const qKey = "q" + gate.dataset.for;
+        const counter = gate.querySelector('.attempt-counter');
+        if (!counter) return;
+        const count = progress.attempts?.[qKey] || 0;
+        counter.textContent = `Attempts: ${count}`;
+      });
+    }
 
     function applyBlurFromProgress() {
       chunks.forEach(section => {
@@ -405,6 +461,7 @@
     }
 
     applyBlurFromProgress();
+    updateAttemptCounters();
 
     // Gate checks (event delegation)
     article.addEventListener("submit", (e) => {
@@ -416,6 +473,7 @@
       const fd = new FormData(gate);
       const chosen = fd.get("q" + chunk);
       const feedback = gate.querySelector(".feedback");
+      const qKey = "q" + chunk;
 
       if (!chosen) {
         feedback.textContent = "Pick an answer.";
@@ -423,11 +481,15 @@
         return;
       }
 
-      if (chosen === ANSWERS["q" + chunk]) {
+      progress.attempts[qKey] = (progress.attempts[qKey] || 0) + 1;
+      saveProgress();
+      updateAttemptCounters();
+
+      if (chosen === ANSWERS[qKey]) {
         feedback.textContent = chunk < chunks.length ? "Correct. Continue." : "Complete. Nice work.";
         feedback.className = "feedback mt-2 text-sm text-green-700";
         progress[chunk] = true;
-        localStorage.setItem(KEY, JSON.stringify(progress));
+        saveProgress();
         revealChunk(chunk + 1, true);
       } else {
         feedback.textContent = "Not correct. Try again.";
@@ -439,9 +501,80 @@
     resetBtn?.addEventListener("click", () => {
       localStorage.removeItem(KEY);
       for (const k in progress) delete progress[k];
+      ensureProgressStructures();
+      saveProgress();
       document.querySelectorAll(".gate .feedback").forEach(el => el.textContent = "");
+      document.querySelectorAll('.attempt-counter').forEach(el => el.textContent = "Attempts: 0");
+      if (reflectionField) reflectionField.value = "";
+      if (submitStatus) {
+        submitStatus.textContent = "";
+        submitStatus.className = "text-sm";
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
       applyBlurFromProgress();
+      updateAttemptCounters();
+    });
+
+    if (reflectionField) {
+      reflectionField.value = progress.responses.reflection || "";
+      reflectionField.addEventListener("input", () => {
+        progress.responses.reflection = reflectionField.value;
+        saveProgress();
+      });
+      const blockPaste = (e) => {
+        e.preventDefault();
+        showToast("Typing only—pasting is disabled.");
+      };
+      reflectionField.addEventListener("paste", blockPaste);
+      reflectionField.addEventListener("drop", blockPaste);
+      reflectionField.addEventListener("copy", (e) => {
+        e.preventDefault();
+        showToast("Copying from this field is disabled. Use your own words!");
+      });
+    }
+
+    if (submitStatus && progress.submittedAt && progress.responses.reflection) {
+      const submittedDate = new Date(progress.submittedAt);
+      submitStatus.textContent = `Submitted on ${submittedDate.toLocaleString()}.`;
+      submitStatus.className = "text-sm text-green-700";
+    }
+
+    reflectionForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const responseText = reflectionField?.value.trim() || "";
+      if (!responseText) {
+        if (submitStatus) {
+          submitStatus.textContent = "Please complete your R.A.C.E. paragraph before submitting.";
+          submitStatus.className = "text-sm text-red-600";
+        }
+        reflectionField?.focus();
+        return;
+      }
+
+      progress.responses.reflection = responseText;
+      progress.submittedAt = new Date().toISOString();
+      saveProgress();
+
+      const completion = chunks.reduce((acc, section) => {
+        const n = Number(section.dataset.chunk);
+        acc[`chunk${n}`] = Boolean(progress[n]);
+        return acc;
+      }, {});
+
+      const submissionPayload = {
+        attempts: { ...progress.attempts },
+        completion,
+        reflection: responseText,
+        submittedAt: progress.submittedAt
+      };
+
+      console.info("Guided reading submission", submissionPayload);
+
+      if (submitStatus) {
+        submitStatus.textContent = "Submission saved on this device! Share with your teacher to record your work.";
+        submitStatus.className = "text-sm text-green-700";
+      }
+      showToast("Submission saved!");
     });
 
     /* ========== Teacher Unlock: hold Shift+L for 3s ========== */
