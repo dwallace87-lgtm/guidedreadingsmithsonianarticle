@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The True Native New Yorkers | Guided Reading</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Lora', serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Source Sans Pro', sans-serif; }
+    :root { --blur: 7px; --speed: 220ms; --purple:#6D28D9; --purpleDark:#4C1D95; --ink:#111827; }
+    .content { transition: filter var(--speed) ease; }
+    .blurred .content,
+    .blurred .gate {
+      filter: blur(var(--blur));
+      pointer-events: none; /* make blurred areas inert */
+    }
+    .visually-hidden { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+
+    .nx-btn { border:1px solid var(--purpleDark); background:var(--purple); color:#fff; }
+    .nx-btn:hover { background:var(--purpleDark); }
+
+    /* Highlighter marks (pastels) */
+    mark { padding: 0 .15em; border-radius: .2em; }
+    .hl-blue   { background: #cfe8ff; }
+    .hl-red    { background: #ffd6d6; }
+    .hl-yellow { background: #fff4b8; }
+
+    /* Swatch buttons */
+    .swatch { width: 28px; height: 28px; border-radius: 999px; border: 2px solid rgba(0,0,0,.1); cursor: pointer; }
+    .sw-blue   { background: #cfe8ff; }
+    .sw-red    { background: #ffd6d6; }
+    .sw-yellow { background: #fff4b8; }
+    .sw-eraser { background: white; background-image: linear-gradient(135deg, transparent 45%, #e5e7eb 45%, #e5e7eb 55%, transparent 55%); }
+    .is-active { outline: 2px solid #111827; outline-offset: 2px; }
+
+    /* Keep selection enabled for highlighting; reduce touch callouts */
+    * { -webkit-touch-callout: none; }
+    #articleRoot { -webkit-user-select: text; user-select: text; }
+
+    /* Logo + glint (non-blocking, respects reduced motion) */
+    .logo-container { position: relative; overflow: hidden; cursor: pointer; display: inline-block; }
+    .logo-container::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      pointer-events: none; /* don't steal clicks */
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo-container::after { transition: none; display: none; }
+    }
+    .logo-container:hover::after { transform: translateX(100%); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      right: 1rem; bottom: 1rem;
+      background: rgba(17,24,39,.95);
+      color: #fff;
+      padding: .5rem .75rem;
+      border-radius: .5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      font-size: .875rem;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+      z-index: 50;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Northside header with logo + Highlighter tools -->
+  <header class="bg-gradient-to-r from-purple-700 to-purple-900 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="logo-container rounded-md bg-white p-1 shadow-sm">
+          <img src="https://northsidechs.org/wp-content/uploads/2023/03/northside-charter-logo-v.png"
+               alt="Northside Charter High School logo" class="h-12 w-auto">
+        </div>
+        <h1 class="text-xl md:text-2xl font-semibold">Guided Reading Mode</h1>
+      </div>
+
+      <!-- Highlighter toolbar -->
+      <div class="flex items-center gap-3 text-sm" aria-label="Highlighter toolbar">
+        <label class="flex items-center gap-2">
+          <input id="hlToggle" type="checkbox" class="h-4 w-4" aria-checked="true">
+          <span>Highlighter</span>
+        </label>
+        <button class="swatch sw-blue"   id="swBlue"   title="Blue (1)"   aria-label="Blue highlighter"   tabindex="0"></button>
+        <button class="swatch sw-yellow" id="swYellow" title="Yellow (2)" aria-label="Yellow highlighter" tabindex="0"></button>
+        <button class="swatch sw-red"    id="swRed"    title="Red (3)"    aria-label="Red highlighter"    tabindex="0"></button>
+        <button class="swatch sw-eraser" id="swErase"  title="Eraser (4)" aria-label="Eraser"             tabindex="0"></button>
+        <button id="clearHighlights" class="px-3 py-1 rounded-md border border-white/30 hover:bg-white/10">Clear highlights</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Source masthead -->
+  <div class="bg-black py-3">
+    <img src="https://www.smithsonianmag.com/static/smithsonianmag/img/smithmag-logo-horizontal-white.98dddd9f3f4d.svg" alt="Smithsonian Magazine Logo" class="h-7 mx-auto">
+  </div>
+
+  <!-- Container -->
+  <div class="bg-white max-w-4xl mx-auto my-8 p-4 sm:p-8 md:p-12 rounded-lg shadow-lg">
+
+    <header class="border-b pb-6 mb-8">
+      <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+        The True Native New Yorkers Can Never Truly Reclaim Their Homeland
+      </h2>
+      <p class="text-lg md:text-xl text-gray-600 font-light">
+        Nearly 400 years after the famous story about the “sale of Manhattan,” some Lenape people are working to bring back their cultural heritage in the place their ancestors once lived.
+      </p>
+      <div class="mt-6 flex items-center">
+        <img class="w-12 h-12 rounded-full mr-4" src="https://th-thumbnailer.cdn-si-edu.com/CLazphHVw0_coZSdkW88Xl2y4Zg=/fit-in/160x80/filters:no_upscale()/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/accounts/headshot/colleenc.png" alt="Colleen Connolly">
+        <div>
+          <p class="text-sm font-semibold text-gray-800">Colleen Connolly — Correspondent</p>
+          <p class="text-sm text-gray-500">October 5, 2018</p>
+        </div>
+      </div>
+
+      <!-- Teacher control: Guided Reading is always ON -->
+      <div class="mt-6 flex items-center justify-end gap-2">
+        <button id="resetProgress" class="text-sm px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50">Reset Progress</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Guided Reading is always on. Progress saves on this device.</p>
+    </header>
+
+    <!-- ARTICLE -->
+    <article id="articleRoot" class="prose lg:prose-xl max-w-none text-gray-800">
+      <figure class="mb-8">
+        <img src="https://th-thumbnailer.cdn-si-edu.com/shQQP2jJJkYYHk7j_uFL6dZkUeY=/1026x684/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/19/84/1984a5f2-122b-442f-9243-f2a2e3b123b0/img_9972_1.jpg" alt="Monument in lower Manhattan referencing a sale of Lenape lands" class="rounded-lg w-full">
+        <figcaption class="text-center text-sm text-gray-600 mt-2">
+          A monument in lower Manhattan commemorates the <strong>“sale” of Lenape lands</strong>.
+        </figcaption>
+      </figure>
+
+      <!-- CHUNK 1 -->
+      <section class="chunk" data-chunk="1" aria-labelledby="c1-title">
+        <h3 id="c1-title" class="text-2xl font-bold">1) Early contact and a powerful myth</h3>
+        <div class="content">
+          <p>When the <strong>Dutch</strong> first arrived in the 1600s, their interactions with the Native people, the <strong>Lenape</strong>, were mostly friendly. They traded goods and shared the land. A well-known story says the Dutch <strong>“purchased” Manahatta island in 1626</strong>. But this deal, and the wall the Dutch later built around their settlement of <strong>New Amsterdam</strong>, marked the start of the <strong>Lenape's forced migration</strong> away from their home.</p>
+          <p>That defensive wall later became the famous <strong>Wall Street</strong>. A Lenape path called <strong>Wickquasgeck</strong> became a Dutch road, which then became <strong>Broadway</strong>. The Lenape helped shape New York City's layout, but many other signs of their history have almost disappeared. Today, some Lenape are working to bring their heritage back to the city.</p>
+        </div>
+
+        <!-- Gate 1 -->
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="1" aria-describedby="c1-help">
+          <h4 class="m-0 text-lg font-semibold">Historical Context</h4>
+          <p id="c1-help" class="text-sm text-gray-600">The passage says a Lenape path became Broadway and a Dutch wall became Wall Street. What does this tell us about how New York City was built?</p>
+          <fieldset class="mt-2">
+            <legend class="visually-hidden">Context</legend>
+            <label class="block my-1"><input type="radio" name="q1" value="a"> The Dutch built their city completely separate from any Lenape settlements.</label>
+            <label class="block my-1"><input type="radio" name="q1" value="b"> The city grew on top of Lenape foundations, often replacing their history.</label>
+            <label class="block my-1"><input type="radio" name="q1" value="c"> The Lenape and the Dutch worked together as equal partners to plan the city.</label>
+            <label class="block my-1"><input type="radio" name="q1" value="d"> The original Lenape names for all major streets are still used in NYC today.</label>
+          </fieldset>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <!-- CHUNK 2 -->
+      <section class="chunk blurred" data-chunk="2" aria-labelledby="c2-title" aria-hidden="true">
+        <h3 id="c2-title" class="text-2xl font-bold">2) Lenape identity and homeland</h3>
+        <div class="content">
+          <p>“We have a history there before the white man ever showed up, but the Lenape are forgotten because they haven’t had a presence there in centuries,” says <strong>Curtis Zunigha</strong>, a leader at the <strong>Lenape Center</strong> in Manhattan. The center works to support Lenape culture. Mr. Zunigha, however, lives in <strong>Oklahoma</strong>. This is because many Lenape were forced to move there long ago.</p>
+          <p>The original Lenape homeland, called <strong>Lenapehoking</strong>, was a large area that covered parts of modern-day New York, New Jersey, Pennsylvania, and Delaware. Today, the two U.S. tribes that are officially recognized by the government as Delaware (another name for the Lenape) are both located in Oklahoma.</p>
+        </div>
+
+        <!-- Gate 2 -->
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="2" aria-describedby="c2-help">
+          <h4 class="m-0 text-lg font-semibold">Claim and Evidence</h4>
+          <p id="c2-help" class="text-sm text-gray-600">Many Lenape people live far from NYC, but their connection to their homeland is still strong. Which piece of evidence best supports this claim?</p>
+          <fieldset class="mt-2">
+            <legend class="visually-hidden">Claim–Evidence</legend>
+            <label class="block my-1"><input type="radio" name="q2" value="a"> There are no people with any Lenape heritage still living in the New York area.</label>
+            <label class="block my-1"><input type="radio" name="q2" value="b"> The Lenape have forgotten all of their historical ties to the island of Manhattan.</label>
+            <label class="block my-1"><input type="radio" name="q2" value="c"> The Lenape Center, based in Manhattan, works to keep the culture alive today.</label>
+            <label class="block my-1"><input type="radio" name="q2" value="d"> Lenape leaders in Oklahoma have stated they have no interest in their history.</label>
+          </fieldset>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <!-- CHUNK 3 -->
+      <section class="chunk blurred" data-chunk="3" aria-labelledby="c3-title" aria-hidden="true">
+        <h3 id="c3-title" class="text-2xl font-bold">3) Migration routes and stigma</h3>
+        <div class="content">
+          <p>The Lenape were pushed from their homeland over many years. They first moved to Pennsylvania, then Ohio and Indiana, then Missouri, and then Kansas. After the Civil War, the U.S. government forced the Lenape in Kansas to sell their land for railroad construction. They then moved to <strong>Oklahoma</strong>, where many live today.</p>
+          <p>Some Lenape people did remain in their original homeland. <strong>Margaret Boldeagle</strong>'s family is one example. She says that many families felt pressure to <strong>assimilate</strong>, or fit in with the new culture. She explains that because of discrimination, or unfair treatment, some people hid their Native identity. “Back in the day, there was a stigma to being native,” she says. “So, a lot of families did not admit to it.”</p>
+        </div>
+
+        <!-- Gate 3 -->
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="3" aria-describedby="c3-help">
+          <h4 class="m-0 text-lg font-semibold">Cause and Effect</h4>
+          <p id="c3-help" class="text-sm text-gray-600">The passage mentions a "stigma to being native." What was a direct result of this unfair treatment and the pressure people felt to assimilate?</p>
+          <fieldset class="mt-2">
+            <legend class="visually-hidden">Cause–Effect</legend>
+            <label class="block my-1"><input type="radio" name="q3" value="a"> The U.S. government celebrated and recognized all of the local Native tribes.</label>
+            <label class="block my-1"><input type="radio" name="q3" value="b"> It led to a great period of peace and shared cultural celebrations for all.</label>
+            <label class="block my-1"><input type="radio" name="q3" value="c"> Many Lenape families felt they had to hide their heritage to avoid mistreatment.</label>
+            <label class="block my-1"><input type="radio" name="q3" value="d"> European settlers started to adopt the traditional clothing of the Lenape people.</label>
+          </fieldset>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <!-- CHUNK 4 -->
+      <section class="chunk blurred" data-chunk="4" aria-labelledby="c4-title" aria-hidden="true">
+        <h3 id="c4-title" class="text-2xl font-bold">4) Monuments and the Manhattan story</h3>
+        <div class="content">
+          <p>Today, two memorials in New York City mention the Lenape, but both tell a story that is not quite right. A monument in Battery Park and a plaque in Inwood Hill Park both commemorate the <strong>“sale of Manhattan,”</strong> continuing a myth that many experts say is a made-up story.</p>
+          <p>The plaque in Inwood Hill Park even claims the deal happened there, though it was more likely made at Fort Amsterdam in lower Manhattan. More importantly, experts say the Lenape probably saw the deal as an agreement to <strong>share the land</strong>, not to sell it forever. The Dutch, however, saw it as a final sale. Notes from a council meeting in 1660 show the Dutch were frustrated that the Lenape would not leave. The Lenape responded that they had only sold the grass, not the land itself.</p>
+        </div>
+
+        <!-- Gate 4 -->
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="4" aria-describedby="c4-help">
+          <h4 class="m-0 text-lg font-semibold">Point of View</h4>
+          <p id="c4-help" class="text-sm text-gray-600">The passage describes a major disagreement over the “sale of Manhattan.” What is the key difference between the Lenape and Dutch points of view?</p>
+          <fieldset class="mt-2">
+            <legend class="visually-hidden">POV</legend>
+            <label class="block my-1"><input type="radio" name="q4" value="a"> Both the Lenape and Dutch agreed the land would be returned after a few years.</label>
+            <label class="block my-1"><input type="radio" name="q4" value="b"> The Lenape wanted to sell the land, but the Dutch only wanted to rent it.</label>
+            <label class="block my-1"><input type="radio" name="q4" value="c"> The Dutch saw it as a one-time sale, while the Lenape saw it as a deal to share.</label>
+            <label class="block my-1"><input type="radio" name="q4" value="d"> The deal was only about trading furs and had nothing at all to do with the land.</label>
+          </fieldset>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <!-- Figure -->
+      <figure class="my-8">
+        <img src="https://th-thumbnailer.cdn-si-edu.com/Qll0z1MjUP0gwuED-nVqZXViXTY=/fit-in/1072x0/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/2a/0e/2a0e65f8-bb9b-4b2d-b6ef-e9badec846ab/ap_091127023900.jpg" alt="Healing ceremony in 2009" class="rounded-lg w-full">
+        <figcaption class="text-center text-sm text-gray-600 mt-2">
+          A 2009 healing ceremony involving Lenape communities and the Collegiate Church.
+        </figcaption>
+      </figure>
+
+      <!-- CHUNK 5 -->
+      <section class="chunk blurred" data-chunk="5" aria-labelledby="c5-title" aria-hidden="true">
+        <h3 id="c5-title" class="text-2xl font-bold">5) Language work and cultural continuity</h3>
+        <div class="content">
+          <p>Even though monuments might tell an old story, Lenape culture remains alive today. In Oklahoma, the Delaware Tribe hosts camps for children to learn <strong>Lenape spiritual practices</strong>, songs, and dances. They have also worked hard to help save the endangered Lenape language, as there are very few fluent speakers left.</p>
+          <p><strong>Jim Rementer</strong> has studied the language for over 50 years. He helped create the <strong>Lenape Talking Dictionary</strong>, which has online lessons with audio. While there are no native speakers in Oklahoma today, he says people are still very interested in learning. He explains that being able to use their native language in prayers and ceremonies helps connect them to their culture and ancestors, keeping it strong for the next generation.</p>
+        </div>
+
+        <!-- Gate 5 -->
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="5" aria-describedby="c5-help">
+          <h4 class="m-0 text-lg font-semibold">Central Idea</h4>
+          <p id="c5-help" class="text-sm text-gray-600">Despite being forced from their homes, the Lenape culture has survived. Which detail is the best proof of this cultural survival?</p>
+          <fieldset class="mt-2">
+            <legend class="visually-hidden">Central Idea</legend>
+            <label class="block my-1"><input type="radio" name="q5" value="a"> Modern monuments in NYC tell the complete and accurate history of the Lenape.</label>
+            <label class="block my-1"><input type="radio" name="q5" value="b"> The area around Wall Street is now a very important global financial center.</label>
+            <label class="block my-1"><input type="radio" name="q5" value="c"> The original Lenape paths are no longer visible anywhere in modern Manhattan.</label>
+            <label class="block my-1"><input type="radio" name="q5" value="d"> Cultural camps and the Lenape Talking Dictionary preserve traditions and language.</label>
+          </fieldset>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
+          <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <p class="text-sm italic text-gray-600 mt-8">
+        *Editor’s note, October 8, 2018: The <strong>Ramapough</strong> are recognized by New Jersey, not the state of Delaware.
+      </p>
+    </article>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-500">
+    © Northside Charter High School • U.S. History Regents Prep
+  </footer>
+
+  <!-- Toast node -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ========== Utility: Toast ========== */
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+    function showToast(msg, ms=1500) {
+      if (!toastEl) return;
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
+    }
+
+    /* ========== Guided Reading (always ON) ========== */
+    const article = document.getElementById("articleRoot");
+    const KEY = "lenape-guided-reading-progress-v3";
+    const ANSWERS = { q1: "b", q2: "c", q3: "c", q4: "c", q5: "d" };
+
+    const chunks = Array.from(document.querySelectorAll(".chunk"));
+    const resetBtn = document.getElementById("resetProgress");
+
+    const progress = JSON.parse(localStorage.getItem(KEY) || "{}");
+
+    function applyBlurFromProgress() {
+      chunks.forEach(section => {
+        const n = Number(section.dataset.chunk);
+        const content = section.querySelector('.content');
+        const gate = section.querySelector('.gate');
+
+        if (n === 1 || progress[n - 1] === true) {
+          section.classList.remove("blurred");
+          section.removeAttribute("aria-hidden");
+          content && content.classList.remove("blurred");
+          gate && gate.classList.remove("blurred");
+        } else {
+          section.classList.add("blurred");
+          section.setAttribute("aria-hidden", "true");
+          content && content.classList.add("blurred");
+          gate && gate.classList.add("blurred");
+        }
+      });
+    }
+
+    function revealChunk(num, move) {
+      const next = document.querySelector(`.chunk[data-chunk="${num}"]`);
+      if (!next) return;
+      next.classList.remove("blurred");
+      next.removeAttribute("aria-hidden");
+      const nextContent = next.querySelector('.content');
+      const nextGate = next.querySelector('.gate');
+      nextContent && nextContent.classList.remove("blurred");
+      nextGate && nextGate.classList.remove("blurred");
+      if (move) next.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    applyBlurFromProgress();
+
+    // Gate checks (event delegation)
+    article.addEventListener("submit", (e) => {
+      if (!e.target.matches('.gate')) return;
+      e.preventDefault();
+
+      const gate = e.target;
+      const chunk = Number(gate.dataset.for);
+      const fd = new FormData(gate);
+      const chosen = fd.get("q" + chunk);
+      const feedback = gate.querySelector(".feedback");
+
+      if (!chosen) {
+        feedback.textContent = "Pick an answer.";
+        feedback.className = "feedback mt-2 text-sm text-red-600";
+        return;
+      }
+
+      if (chosen === ANSWERS["q" + chunk]) {
+        feedback.textContent = chunk < chunks.length ? "Correct. Continue." : "Complete. Nice work.";
+        feedback.className = "feedback mt-2 text-sm text-green-700";
+        progress[chunk] = true;
+        localStorage.setItem(KEY, JSON.stringify(progress));
+        revealChunk(chunk + 1, true);
+      } else {
+        feedback.textContent = "Not correct. Try again.";
+        feedback.className = "feedback mt-2 text-sm text-red-600";
+      }
+    });
+
+    // Reset progress
+    resetBtn?.addEventListener("click", () => {
+      localStorage.removeItem(KEY);
+      for (const k in progress) delete progress[k];
+      document.querySelectorAll(".gate .feedback").forEach(el => el.textContent = "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      applyBlurFromProgress();
+    });
+
+    /* ========== Teacher Unlock: hold Shift+L for 3s ========== */
+    let unlockHoldTimer = null;
+    let unlockAutoTimer = null;
+    let isUnlocked = false;
+    const UNLOCK_HOLD_MS = 3000;
+    const UNLOCK_WINDOW_MS = 60000;
+
+    function unlockAll() {
+      isUnlocked = true;
+      chunks.forEach(sec => {
+        sec.classList.remove("blurred");
+        sec.removeAttribute("aria-hidden");
+        sec.querySelector('.content')?.classList.remove("blurred");
+        sec.querySelector('.gate')?.classList.remove("blurred");
+      });
+    }
+    function relockAll() {
+      isUnlocked = false;
+      applyBlurFromProgress();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (!(e.shiftKey && (e.key === "L" || e.key === "l"))) return;
+
+      // If already unlocked, pressing again relocks immediately
+      if (isUnlocked) {
+        clearTimeout(unlockHoldTimer);
+        clearTimeout(unlockAutoTimer);
+        relockAll();
+        showToast("Guided reading relocked.");
+        return;
+      }
+
+      if (unlockHoldTimer) return; // already counting
+      unlockHoldTimer = setTimeout(() => {
+        unlockHoldTimer = null;
+        unlockAll();
+        showToast("Guided reading unlocked for 60s.");
+        clearTimeout(unlockAutoTimer);
+        unlockAutoTimer = setTimeout(() => {
+          relockAll();
+          showToast("Guided reading relocked.");
+        }, UNLOCK_WINDOW_MS);
+      }, UNLOCK_HOLD_MS);
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "L" || e.key === "l") {
+        clearTimeout(unlockHoldTimer);
+        unlockHoldTimer = null;
+      }
+    });
+
+    /* ========== Highlighter ========== */
+    const HL_KEY = "lenape-article-highlights-v2";
+    const hlToggle = document.getElementById("hlToggle");
+    const swBlue   = document.getElementById("swBlue");
+    const swYellow = document.getElementById("swYellow");
+    const swRed    = document.getElementById("swRed");
+    const swErase  = document.getElementById("swErase");
+    const clearBtn = document.getElementById("clearHighlights");
+
+    let hlEnabled = true;
+    let hlMode = "yellow";
+
+    if (hlToggle) { hlToggle.checked = true; hlToggle.setAttribute("aria-checked","true"); }
+
+    function setActiveSwatch(btn) {
+      [swBlue, swYellow, swRed, swErase].forEach(b => b.classList.remove("is-active"));
+      btn && btn.classList.add("is-active");
+    }
+    setActiveSwatch(swYellow);
+
+    hlToggle?.addEventListener("change", () => {
+      hlEnabled = hlToggle.checked;
+      hlToggle.setAttribute("aria-checked", String(hlEnabled));
+      if (!hlEnabled) {
+        hlMode = null;
+        setActiveSwatch(null);
+        document.body.style.cursor = "auto";
+      } else {
+        hlMode = hlMode || "yellow";
+        setActiveSwatch(hlMode === "yellow" ? swYellow : hlMode === "blue" ? swBlue : hlMode === "red" ? swRed : swErase);
+        document.body.style.cursor = hlMode === "erase" ? "not-allowed" : "text";
+      }
+    });
+
+    function pickMode(mode, btn) {
+      if (!hlEnabled) { hlToggle.checked = true; hlToggle.dispatchEvent(new Event("change")); }
+      hlMode = mode;
+      setActiveSwatch(btn);
+      document.body.style.cursor = mode === "erase" ? "not-allowed" : "text";
+    }
+    swBlue?.addEventListener("click",  () => pickMode("blue", swBlue));
+    swYellow?.addEventListener("click",() => pickMode("yellow", swYellow));
+    swRed?.addEventListener("click",   () => pickMode("red", swRed));
+    swErase?.addEventListener("click", () => pickMode("erase", swErase));
+
+    // Keyboard shortcuts: 1=Blue, 2=Yellow, 3=Red, 4=Eraser
+    document.addEventListener("keydown", (e) => {
+      if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+      if (e.key === "1") pickMode("blue", swBlue);
+      else if (e.key === "2") pickMode("yellow", swYellow);
+      else if (e.key === "3") pickMode("red", swRed);
+      else if (e.key === "4") pickMode("erase", swErase);
+    });
+
+    function selectionTouchesGate(range) {
+      const start = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentNode;
+      const end   = range.endContainer.nodeType === 1 ? range.endContainer : range.endContainer.parentNode;
+      return (start.closest && start.closest(".gate")) || (end.closest && end.closest(".gate"));
+    }
+
+    function wrapSelection(range, className) {
+      const mark = document.createElement("mark");
+      mark.className = className;
+      const frag = range.cloneContents();
+      if (frag.querySelector && frag.querySelector(".gate")) return;
+      range.deleteContents();
+      mark.appendChild(frag);
+      range.insertNode(mark);
+      mark.parentNode?.normalize();
+    }
+
+    function highlightSelection(color) {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return false;
+      const range = sel.getRangeAt(0);
+      const node = range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentNode;
+      if (!article.contains(node) || selectionTouchesGate(range)) return false;
+
+      try {
+        const mark = document.createElement("mark");
+        mark.className = "hl-" + color;
+        range.surroundContents(mark);
+        mark.parentNode?.normalize();
+      } catch {
+        wrapSelection(range, "hl-" + color);
+      }
+      sel.removeAllRanges();
+      return true;
+    }
+
+    // Eraser (delegated)
+    article.addEventListener("click", (e) => {
+      if (!hlEnabled || hlMode !== "erase") return;
+      const t = e.target;
+      if (t.tagName === "MARK") {
+        const parent = t.parentNode;
+        while (t.firstChild) parent.insertBefore(t.firstChild, t);
+        parent.removeChild(t);
+        parent.normalize();
+        localStorage.setItem(HL_KEY, article.innerHTML);
+      }
+    });
+
+    // Apply highlight on mouseup inside article
+    article.addEventListener("mouseup", () => {
+      if (!hlEnabled || !hlMode || hlMode === "erase") return;
+      if (highlightSelection(hlMode)) {
+        localStorage.setItem(HL_KEY, article.innerHTML);
+      }
+    });
+
+    // Clear all highlights
+    function clearAllHighlights() {
+      article.querySelectorAll("mark").forEach(m => {
+        const parent = m.parentNode;
+        while (m.firstChild) parent.insertBefore(m.firstChild, m);
+        parent.removeChild(m);
+        parent.normalize();
+      });
+      localStorage.removeItem(HL_KEY);
+    }
+    clearBtn?.addEventListener("click", clearAllHighlights);
+
+    // Restore saved highlights
+    const savedArticle = localStorage.getItem(HL_KEY);
+    if (savedArticle) article.innerHTML = savedArticle;
+
+    /* ========== Anti-copy protections + toast ========== */
+    document.addEventListener("contextmenu", (e) => {
+      if (!e.shiftKey) { e.preventDefault(); showToast("Copy disabled"); }
+    });
+    document.addEventListener("copy", (e) => {
+      e.preventDefault();
+      e.clipboardData?.setData("text/plain","");
+      showToast("Copy disabled");
+    });
+    document.addEventListener("cut",  (e) => { e.preventDefault(); showToast("Copy disabled"); });
+    document.addEventListener("keydown", (e) => {
+      const k = e.key.toLowerCase();
+      const meta = e.ctrlKey || e.metaKey;
+      if (meta && (k === "c" || k === "x" || k === "s" || (k === "u" && !e.shiftKey))) {
+        e.preventDefault();
+        showToast("Copy disabled");
+      }
+    });
+  </script>
+</body>
+</html>
