@@ -72,6 +72,67 @@
       z-index: 50;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* —— Glossary ————————————————————————————————————— */
+    .gloss {
+      position: relative;
+      cursor: help;
+      padding: 0 .06em;
+      border-bottom: 2px dotted rgba(109,40,217,.6);
+      border-radius: .15rem;
+    }
+    .gloss:focus-visible {
+      outline: 2px solid #6D28D9;
+      outline-offset: 2px;
+    }
+    .gloss-bubble {
+      position: fixed;
+      max-width: min(32rem, 92vw);
+      background: #111827;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 20px 40px rgba(0,0,0,.35);
+      border-radius: .75rem;
+      padding: .75rem .9rem;
+      font-size: .94rem;
+      line-height: 1.25rem;
+      z-index: 60;
+      opacity: 0;
+      transform: translateY(6px) scale(.98);
+      transition: opacity .15s ease, transform .15s ease;
+    }
+    .gloss-bubble.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .gloss-bubble .term {
+      display: inline-block;
+      font-weight: 700;
+      margin-right: .4rem;
+    }
+    .gloss-bubble .tone {
+      opacity: .9;
+    }
+    .gloss-bubble .subtle {
+      display: block;
+      font-size: .8rem;
+      opacity: .8;
+      margin-top: .35rem;
+    }
+
+    .gloss-bubble::after {
+      content: "";
+      position: absolute;
+      width: 10px; height: 10px;
+      background: #111827;
+      border-left: 1px solid rgba(255,255,255,.08);
+      border-top: 1px solid rgba(255,255,255,.08);
+      transform: rotate(45deg);
+      left: 1rem; top: -5px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .gloss-bubble { transition: none; }
+    }
   </style>
 </head>
 <body class="bg-gray-100">
@@ -574,6 +635,164 @@
         showToast("Copy disabled");
       }
     });
+  </script>
+
+  <script>
+  /* —— GLOSSARY: edit freely (Brooklyn-teacher tone, classroom-clean) ——— */
+  const GLOSSARY = {
+    "Lenape": "The Native nation whose homeland included NYC before Europeans showed up. Think: the original New Yorkers.",
+    "Manahatta": "Old Lenape name for the island—yep, that’s Manhattan before it was Manhattan.",
+    "New Amsterdam": "The Dutch version of NYC before it got the name New York.",
+    "forced migration": "People pushed to move—not a road trip, more like ‘you gotta go or else.’",
+    "Wickquasgeck": "Lenape footpath that basically became Broadway. The city is built on older routes.",
+    "treaties": "Official agreements between groups or governments—on paper, with rules (even if they weren’t respected).",
+    "federally recognized": "The U.S. government officially says ‘this is a tribe.’ That status affects rights and resources.",
+    "assimilate": "Blend into the majority culture—act, dress, and talk like them to be accepted.",
+    "stigma": "A social mark—people judge you for it, so folks hide parts of themselves.",
+    "memorial": "A structure meant to honor history, but it can still tell the story wrong.",
+    "inaccuracies": "Parts that aren’t correct—history can get messy or biased.",
+    "perpetuating": "Keeping a story going—true or not—by repeating it.",
+    "fabrication": "A made-up piece—something that sounds real but isn’t.",
+    "plaque": "A metal sign on a wall or rock that ‘explains’ history in like three sentences.",
+    "council": "Leaders meeting to make decisions—like a city board back then.",
+    "indigenous": "The people native to a place—the first communities there.",
+    "heritage": "What gets passed down—culture, language, traditions, stories.",
+    "descendants": "Kids of kids of kids—future generations in a family or people.",
+    "shared use": "We can both use this land—doesn’t mean ‘we sold it forever.’",
+    "Lenapehoking": "The Lenape homeland—NY, NJ, parts of PA and DE. Big area, not just Manhattan.",
+    "spiritual practices": "Ways people connect with the sacred—ceremony, song, prayer.",
+    "ceremonies": "Organized traditions to honor people, the land, and ancestors.",
+    "endangered (language)": "Not many speakers left—if folks don’t learn it, it could fade out.",
+    "dictionary (Lenape Talking Dictionary)": "Online tool with words + audio, to keep language alive."
+  };
+
+  /* —— which words to tag (include common variants & capitalization) —— */
+  const GLOSSARY_MAP = Object.fromEntries(
+    Object.entries(GLOSSARY).map(([term, def]) => [term.toLowerCase(), def])
+  );
+  const GLOSSARY_TERMS = Object.keys(GLOSSARY_MAP);
+
+  /* —— annotate: wrap matches in <span class="gloss" tabindex="0"> —— */
+  function annotateGlossary(root) {
+    const skipSel = new Set(["SCRIPT","STYLE","CODE","KBD","SAMP","BUTTON","INPUT","TEXTAREA","SELECT"]);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const p = node.parentElement;
+        if (!p) return NodeFilter.FILTER_REJECT;
+        if (skipSel.has(p.tagName)) return NodeFilter.FILTER_REJECT;
+        if (p.closest(".gate")) return NodeFilter.FILTER_REJECT;
+        if (p.closest(".gloss")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    const escaped = GLOSSARY_TERMS
+      .sort((a,b)=>b.length-a.length)
+      .map(t => t.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"));
+    const re = new RegExp("\\b(" + escaped.join("|") + ")\\b", "gi");
+
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach(textNode => {
+      const txt = textNode.nodeValue;
+      re.lastIndex = 0;
+      if (!re.test(txt)) return;
+      re.lastIndex = 0;
+
+      const frag = document.createDocumentFragment();
+      let lastIdx = 0;
+      txt.replace(re, (match, term, idx) => {
+        if (idx > lastIdx) frag.appendChild(document.createTextNode(txt.slice(lastIdx, idx)));
+        const span = document.createElement("span");
+        span.className = "gloss";
+        span.tabIndex = 0;
+        const key = (term || match).toLowerCase();
+        span.dataset.term = match;
+        span.dataset.key = key;
+        span.textContent = match;
+        frag.appendChild(span);
+        lastIdx = idx + match.length;
+        return match;
+      });
+      if (lastIdx < txt.length) frag.appendChild(document.createTextNode(txt.slice(lastIdx)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  }
+
+  /* —— bubble: single global popover we reuse —— */
+  let glossBubble;
+  let activeGloss = null;
+  function ensureBubble() {
+    if (glossBubble) return glossBubble;
+    glossBubble = document.createElement("div");
+    glossBubble.className = "gloss-bubble";
+    glossBubble.setAttribute("role", "dialog");
+    glossBubble.setAttribute("aria-modal", "false");
+    glossBubble.style.display = "none";
+    document.body.appendChild(glossBubble);
+    return glossBubble;
+  }
+  function hideBubble() {
+    if (!glossBubble) return;
+    glossBubble.classList.remove("show");
+    setTimeout(() => { glossBubble && (glossBubble.style.display = "none"); }, 150);
+    activeGloss = null;
+  }
+  function showBubbleFor(el) {
+    const key = (el.dataset.key || el.textContent || "").toLowerCase();
+    const def = GLOSSARY_MAP[key];
+    if (!def) return hideBubble();
+
+    const bubble = ensureBubble();
+    bubble.innerHTML = `
+      <span class="term">${el.dataset.term || key}</span>
+      <span class="tone">${def}</span>
+      <span class="subtle">Tap word again or press Esc to dismiss.</span>
+    `;
+
+    const r = el.getBoundingClientRect();
+    bubble.style.display = "block";
+    const after = bubble.getBoundingClientRect();
+    let top = Math.max(8, r.bottom + 8);
+    let left = Math.max(8, Math.min(window.innerWidth - after.width - 8, r.left));
+
+    bubble.style.top = `${top}px`;
+    bubble.style.left = `${left}px`;
+    bubble.classList.add("show");
+    activeGloss = el;
+  }
+
+  function isGloss(el){ return el && el.classList && el.classList.contains("gloss"); }
+
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (isGloss(t)) {
+      if (activeGloss === t && glossBubble && glossBubble.style.display === "block") {
+        hideBubble();
+      } else {
+        showBubbleFor(t);
+      }
+    } else if (glossBubble && !glossBubble.contains(t)) {
+      hideBubble();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (isGloss(document.activeElement) && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      showBubbleFor(document.activeElement);
+    }
+    if (e.key === "Escape") hideBubble();
+  });
+  window.addEventListener("scroll", () => hideBubble());
+  window.addEventListener("resize", () => hideBubble());
+
+  (function initGlossary(){
+    const article = document.getElementById("articleRoot");
+    if (!article) return;
+    annotateGlossary(article);
+  })();
   </script>
 </body>
 </html>
