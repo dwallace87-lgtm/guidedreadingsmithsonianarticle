@@ -416,9 +416,16 @@
     /* ========== Guided Reading (always ON) ========== */
     const article = document.getElementById("articleRoot");
     const KEY = "lenape-guided-reading-progress-v3";
-    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbwsc5YkOZWBEIyn3SAYQRlppY5z7A3aRLknz-QQcpKnuUODhcY-xYAWHIk8UvkeD3QB/exec";
-    const PING_URL = ENDPOINT_URL + "?ping=1";
+    const ENDPOINT_URL = "https://formspree.io/f/mvgwnvjk";
     const ASSIGNMENT_NAME = "1021 Native American Article";
+    const HEADER_KEYS = [
+      "submission_id","submitted_at_iso","submitted_at_et","student_name","period",
+      "device_id","assignment",
+      "q1_attempts","q2_attempts","q3_attempts","q4_attempts","q5_attempts",
+      "q1_correct","q2_correct","q3_correct","q4_correct","q5_correct",
+      "chunks_completed","total_attempts","score_correct","score_percent",
+      "reflection_words","reflection_chars","reflection_text"
+    ];
     const DEVICE_ID_STORAGE_KEY = "lenape-guided-reading-device-id";
     const SUBMISSION_PREFIX = "LENAPE";
     const ANSWERS = { q1: "b", q2: "c", q3: "c", q4: "c", q5: "d" };
@@ -626,46 +633,23 @@
       ];
     }
 
-    // ---- Resilient posting with no-cors first ----
-    async function postToSheet(row) {
-      if (!Array.isArray(row) || !row.length) return false;
+    // ---- Send to Formspree instead of Google Sheets ----
+    async function postToFormspree(row) {
+      // Turn the row array into a named object using your header keys
+      const payload = Object.fromEntries(HEADER_KEYS.map((k, i) => [k, row[i] ?? ""]));
 
-      // 1) Fire-and-forget form-encoded with no-cors (works with Apps Script)
       try {
-        const formBody = new URLSearchParams({ row: JSON.stringify(row) });
         const res = await fetch(ENDPOINT_URL, {
           method: "POST",
-          mode: "no-cors", // avoid CORS preflight; response will be opaque
-          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-          body: formBody.toString(),
-          redirect: "follow"
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"    // <-- important for Formspree CORS
+          },
+          body: JSON.stringify(payload)
         });
-        // Treat opaque as success (we can't read body in no-cors)
-        if (res.type === "opaque" || res.type === "opaqueredirect") return true;
-        if (res.ok) return true;
+        return res.ok;
       } catch (err) {
-        console.warn("Form-encoded no-cors failed:", err);
-      }
-
-      // 2) Optional JSON attempt if CORS is allowed
-      try {
-        const jsonBody = JSON.stringify({ row });
-        const res2 = await fetch(ENDPOINT_URL, {
-          method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "application/json" },
-          body: jsonBody,
-          redirect: "follow"
-        });
-
-        if (res2.type === "opaque" || res2.type === "opaqueredirect") return true;
-        if (res2.ok) return true;
-
-        const t = await res2.text().catch(() => "");
-        console.warn("JSON CORS attempt not ok:", res2.status, t);
-        return false;
-      } catch (e2) {
-        console.warn("JSON CORS attempt errored:", e2);
+        console.warn("Formspree error:", err);
         return false;
       }
     }
@@ -836,23 +820,23 @@
       showToast("Submission saved!");
 
       const csvRow = buildSubmissionRow(progress, responseText);
-      postToSheet(csvRow).then(ok => {
+      postToFormspree(csvRow).then(ok => {
         if (ok) {
-          showToast("Sent to sheet");
+          showToast("Sent to Formspree");
           if (submitStatus) {
-            submitStatus.textContent = "Submitted and recorded on teacher sheet.";
+            submitStatus.textContent = "Submitted and recorded (Formspree).";
             submitStatus.className = "text-sm text-green-700";
           }
         } else {
-          showToast("Could not reach sheet. Saved locally.");
+          showToast("Could not reach Formspree. Saved locally.");
           if (submitStatus) {
             submitStatus.textContent = "Saved locally. Try again later.";
             submitStatus.className = "text-sm text-yellow-700";
           }
         }
       }).catch(err => {
-        console.error("Sheet submission error", err);
-        showToast("Could not reach sheet. Saved locally.");
+        console.error("Formspree submit error", err);
+        showToast("Could not reach Formspree. Saved locally.");
         if (submitStatus) {
           submitStatus.textContent = "Saved locally. Try again later.";
           submitStatus.className = "text-sm text-yellow-700";
@@ -860,16 +844,27 @@
       });
     });
 
-    // Connection check button — uses GET ?ping=1 so you see a PING row
-    document.getElementById("pingEndpoint")?.addEventListener("click", async () => {
+    document.getElementById("pingEndpoint")?.addEventListener("click", () => {
       const status = document.getElementById("pingStatus");
-      status.innerHTML = `Pinging… <a class="underline" target="_blank" rel="noopener" href="${PING_URL}">open ping</a>`;
-      try {
-        await fetch(PING_URL, { method: "GET", mode: "no-cors" });
-        status.textContent = "Ping sent — check sheet";
-      } catch {
-        status.textContent = "Error";
-      }
+      status.textContent = "Pinging…";
+
+      // Minimal row that still matches your header order
+      postToFormspree([
+        `PING-${Date.now()}`,                     // submission_id
+        new Date().toISOString(),                // submitted_at_iso
+        progress.profile?.timestampEastern || "",// submitted_at_et
+        progress.profile?.studentName || "",     // student_name
+        progress.profile?.period || "",          // period
+        progress.deviceId || getOrCreateDeviceId(), // device_id
+        ASSIGNMENT_NAME,                         // assignment
+        0,0,0,0,0,                                // q*_attempts
+        false,false,false,false,false,            // q*_correct
+        0,0,0,0,                                  // chunks/attempts/score/percent
+        0,0,                                      // reflection_words/chars
+        "ping"                                    // reflection_text
+      ])
+      .then(ok => { status.textContent = ok ? "Connected" : "No response"; })
+      .catch(() => { status.textContent = "Error"; });
     });
 
     /* ========== Teacher Unlock: hold Shift+L for 3s ========== */
