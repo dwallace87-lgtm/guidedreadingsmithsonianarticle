@@ -394,6 +394,10 @@
     /* ========== Guided Reading (always ON) ========== */
     const article = document.getElementById("articleRoot");
     const KEY = "lenape-guided-reading-progress-v3";
+    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxv2xbuzRBk1of6paWb5Lq1id2cyEQV4qQhHlvbromUYqHSRGAHRTSNG81IKa2em_6VOw/exec";
+    const ASSIGNMENT_NAME = "1021 Native American Article";
+    const DEVICE_ID_STORAGE_KEY = "lenape-guided-reading-device-id";
+    const SUBMISSION_PREFIX = "LENAPE";
     const ANSWERS = { q1: "b", q2: "c", q3: "c", q4: "c", q5: "d" };
 
     const chunks = Array.from(document.querySelectorAll(".chunk"));
@@ -405,6 +409,7 @@
       if (!progress || typeof progress !== "object") return;
       if (!progress.attempts || typeof progress.attempts !== "object") progress.attempts = {};
       if (!progress.responses || typeof progress.responses !== "object") progress.responses = {};
+      if (!progress.profile || typeof progress.profile !== "object") progress.profile = {};
     }
 
     ensureProgressStructures();
@@ -412,6 +417,94 @@
     function saveProgress() {
       ensureProgressStructures();
       localStorage.setItem(KEY, JSON.stringify(progress));
+    }
+
+    ensureIdentifiers();
+
+    function ensureIdentifiers() {
+      let updated = false;
+      if (!progress.deviceId) {
+        progress.deviceId = getOrCreateDeviceId();
+        updated = true;
+      } else {
+        localStorage.setItem(DEVICE_ID_STORAGE_KEY, progress.deviceId);
+      }
+      if (!progress.submissionId) {
+        progress.submissionId = createSubmissionId();
+        updated = true;
+      }
+      if (updated) saveProgress();
+    }
+
+    function getOrCreateDeviceId() {
+      const stored = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
+      if (stored) return stored;
+      const random = Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const fragment = random.slice(-4).padStart(4, "0");
+      const id = `CB-${fragment}`;
+      localStorage.setItem(DEVICE_ID_STORAGE_KEY, id);
+      return id;
+    }
+
+    function createSubmissionId() {
+      const now = new Date();
+      const stamp = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, "0")}${String(now.getUTCDate()).padStart(2, "0")}` +
+        `${String(now.getUTCHours()).padStart(2, "0")}${String(now.getUTCMinutes()).padStart(2, "0")}${String(now.getUTCSeconds()).padStart(2, "0")}`;
+      const random = Math.random().toString(36).slice(-4).toUpperCase();
+      return `${SUBMISSION_PREFIX}-${stamp}-${random}`;
+    }
+
+    function countWords(text) {
+      if (!text) return 0;
+      return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    function buildSubmissionRow(currentProgress, reflectionText) {
+      const profile = currentProgress?.profile || {};
+      const attempts = currentProgress?.attempts || {};
+      const totalChunks = chunks.length;
+      const attemptCounts = Array.from({ length: totalChunks }, (_, idx) => Number(attempts[`q${idx + 1}`] || 0));
+      const completedChunks = Array.from({ length: totalChunks }, (_, idx) => Boolean(currentProgress?.[idx + 1]));
+      const correctFlags = completedChunks.map(Boolean);
+      const response = typeof reflectionText === "string" ? reflectionText : "";
+      const submissionId = currentProgress?.submissionId || createSubmissionId();
+      const submittedAt = currentProgress?.submittedAt || new Date().toISOString();
+      const deviceId = currentProgress?.deviceId || getOrCreateDeviceId();
+
+      if (currentProgress && !currentProgress.submissionId) currentProgress.submissionId = submissionId;
+      if (currentProgress && !currentProgress.deviceId) currentProgress.deviceId = deviceId;
+
+      return [
+        submissionId,
+        submittedAt,
+        profile.studentName || "",
+        profile.studentEmail || "",
+        profile.period || profile.classPeriod || "",
+        profile.teacherName || profile.teacher || "",
+        profile.assignmentName || ASSIGNMENT_NAME,
+        deviceId,
+        ...attemptCounts,
+        ...correctFlags,
+        ...completedChunks,
+        countWords(response),
+        response.length,
+        response
+      ];
+    }
+
+    async function postToSheet(row) {
+      if (!Array.isArray(row) || !row.length) return false;
+      try {
+        const res = await fetch(ENDPOINT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ row })
+        });
+        return res.ok;
+      } catch (err) {
+        console.error("Failed to post to sheet", err);
+        return false;
+      }
     }
 
     const reflectionForm = document.getElementById("submissionForm");
@@ -571,10 +664,34 @@
       console.info("Guided reading submission", submissionPayload);
 
       if (submitStatus) {
-        submitStatus.textContent = "Submission saved on this device! Share with your teacher to record your work.";
-        submitStatus.className = "text-sm text-green-700";
+        submitStatus.textContent = "Submitting to teacher sheet...";
+        submitStatus.className = "text-sm text-gray-700";
       }
       showToast("Submission saved!");
+
+      const csvRow = buildSubmissionRow(progress, responseText);
+      postToSheet(csvRow).then(ok => {
+        if (ok) {
+          showToast("Sent to sheet");
+          if (submitStatus) {
+            submitStatus.textContent = "Submitted and recorded on teacher sheet.";
+            submitStatus.className = "text-sm text-green-700";
+          }
+        } else {
+          showToast("Could not reach sheet. Saved locally.");
+          if (submitStatus) {
+            submitStatus.textContent = "Saved locally. Try again later.";
+            submitStatus.className = "text-sm text-yellow-700";
+          }
+        }
+      }).catch(err => {
+        console.error("Sheet submission error", err);
+        showToast("Could not reach sheet. Saved locally.");
+        if (submitStatus) {
+          submitStatus.textContent = "Saved locally. Try again later.";
+          submitStatus.className = "text-sm text-yellow-700";
+        }
+      });
     });
 
     /* ========== Teacher Unlock: hold Shift+L for 3s ========== */
