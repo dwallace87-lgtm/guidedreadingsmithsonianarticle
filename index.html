@@ -234,7 +234,7 @@
         </div>
 
         <!-- Gate 1 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="1" aria-describedby="c1-help">
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="1" aria-describedby="c1-help" onsubmit="return false">
           <h4 class="m-0 text-lg font-semibold">Historical Context</h4>
           <p id="c1-help" class="text-sm text-gray-600">The passage says a Lenape path became Broadway and a Dutch wall became Wall Street. What does this tell us about how New York City was built?</p>
           <fieldset class="mt-2">
@@ -259,7 +259,7 @@
         </div>
 
         <!-- Gate 2 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="2" aria-describedby="c2-help">
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="2" aria-describedby="c2-help" onsubmit="return false">
           <h4 class="m-0 text-lg font-semibold">Claim and Evidence</h4>
           <p id="c2-help" class="text-sm text-gray-600">Many Lenape people live far from NYC, but their connection to their homeland is still strong. Which piece of evidence best supports this claim?</p>
           <fieldset class="mt-2">
@@ -284,7 +284,7 @@
         </div>
 
         <!-- Gate 3 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="3" aria-describedby="c3-help">
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="3" aria-describedby="c3-help" onsubmit="return false">
           <h4 class="m-0 text-lg font-semibold">Cause and Effect</h4>
           <p id="c3-help" class="text-sm text-gray-600">The passage mentions a "stigma to being native." What was a direct result of this unfair treatment and the pressure people felt to assimilate?</p>
           <fieldset class="mt-2">
@@ -309,7 +309,7 @@
         </div>
 
         <!-- Gate 4 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="4" aria-describedby="c4-help">
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="4" aria-describedby="c4-help" onsubmit="return false">
           <h4 class="m-0 text-lg font-semibold">Point of View</h4>
           <p id="c4-help" class="text-sm text-gray-600">The passage describes a major disagreement over the “sale of Manhattan.” What is the key difference between the Lenape and Dutch points of view?</p>
           <fieldset class="mt-2">
@@ -342,7 +342,7 @@
         </div>
 
         <!-- Gate 5 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="5" aria-describedby="c5-help">
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="5" aria-describedby="c5-help" onsubmit="return false">
           <h4 class="m-0 text-lg font-semibold">Central Idea</h4>
           <p id="c5-help" class="text-sm text-gray-600">Despite being forced from their homes, the Lenape culture has survived. Which detail is the best proof of this cultural survival?</p>
           <fieldset class="mt-2">
@@ -1041,7 +1041,6 @@
       });
       localStorage.removeItem(HL_KEY);
     }
-    const clearBtn = document.getElementById("clearHighlights");
     clearBtn?.addEventListener("click", clearAllHighlights);
 
     // Restore saved highlights
