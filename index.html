@@ -73,74 +73,8 @@
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
-    /* —— Translation controls —————————————————————————— */
-    .translate-controls { position: relative; }
-    .translate-button {
-      border: 1px solid rgba(255,255,255,.4);
-      background: rgba(255,255,255,.18);
-      color: #fff;
-      padding: .4rem .9rem;
-      border-radius: .5rem;
-      font-weight: 600;
-      transition: background .2s ease, color .2s ease;
-    }
-    .translate-button:hover,
-    .translate-button:focus-visible {
-      background: rgba(255,255,255,.28);
-      color: #fff;
-      outline: none;
-    }
-    .translate-menu {
-      position: absolute;
-      right: 0;
-      top: calc(100% + .5rem);
-      min-width: 13rem;
-      background: #fff;
-      color: #111827;
-      border-radius: .75rem;
-      box-shadow: 0 18px 40px rgba(0,0,0,.18);
-      border: 1px solid rgba(17,24,39,.08);
-      padding: .4rem;
-      display: none;
-      z-index: 70;
-    }
-    .translate-menu.show { display: block; }
-    .translate-menu button {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      width: 100%;
-      font-size: .95rem;
-      padding: .45rem .6rem;
-      border-radius: .55rem;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      color: inherit;
-      font-weight: 600;
-    }
-    .translate-menu button:hover,
-    .translate-menu button:focus-visible {
-      background: #ede9fe;
-      outline: none;
-    }
-    .translate-menu button[data-active="true"] {
-      background: #c7d2fe;
-    }
-    .translate-menu .lang-label {
-      display: block;
-      font-size: .8rem;
-      color: #6b7280;
-      font-weight: 500;
-    }
-
-    /* Hide Google Translate default UI */
-    #google_translate_element { position: absolute; left: -9999px; }
-    body > .skiptranslate { display: none !important; }
-    .goog-te-banner-frame.skiptranslate { display: none !important; }
-    body { top: 0 !important; }
-    .goog-te-gadget-icon { display: none !important; }
-    .goog-te-gadget { font-size: 0 !important; }
+    html[dir="rtl"] body { direction: rtl; }
+    html[dir="rtl"] .prose { text-align: right; }
 
     /* —— Glossary ————————————————————————————————————— */
     .gloss {
@@ -214,19 +148,22 @@
 <body class="bg-gray-100">
 
   <section class="max-w-4xl mx-auto my-4 p-4 border rounded-lg bg-gray-50">
-    <h4 class="font-semibold mb-2">Student Info</h4>
+    <h4 id="t_studentInfo" class="font-semibold mb-2">Student Info</h4>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <label class="block text-sm">Student Name (First Name, Last Name)
+      <label class="block text-sm" for="siName">
+        <span id="t_nameLabel">Student Name (First Name, Last Name)</span>
         <input id="siName" class="mt-1 w-full border rounded p-2" placeholder="First Name, Last Name" />
       </label>
-      <label class="block text-sm">Timestamp (Eastern)
+      <label class="block text-sm" for="siTimestamp">
+        <span id="t_timeLabel">Timestamp (Eastern)</span>
         <input id="siTimestamp" class="mt-1 w-full border rounded p-2 bg-gray-100" aria-live="polite" readonly />
       </label>
-      <label class="block text-sm">Period
+      <label class="block text-sm" for="siPeriod">
+        <span id="t_periodLabel">Period</span>
         <input id="siPeriod" class="mt-1 w-full border rounded p-2" placeholder="3" />
       </label>
     </div>
-    <p class="text-xs text-gray-600 mt-2">Saved on this Chromebook for next time.</p>
+    <p id="t_savedNote" class="text-xs text-gray-600 mt-2">Saved on this Chromebook for next time.</p>
   </section>
 
   <!-- Northside header with logo + Highlighter tools -->
@@ -237,7 +174,7 @@
           <img src="https://northsidechs.org/wp-content/uploads/2023/03/northside-charter-logo-v.png"
                alt="Northside Charter High School logo" class="h-12 w-auto">
         </div>
-        <h1 class="text-xl md:text-2xl font-semibold">Guided Reading Mode</h1>
+        <h1 id="t_guidedReading" class="text-xl md:text-2xl font-semibold">Guided Reading Mode</h1>
       </div>
 
       <!-- Highlighter toolbar -->
@@ -253,28 +190,14 @@
           <button class="swatch sw-eraser" id="swErase"  title="Eraser (4)" aria-label="Eraser"             tabindex="0"></button>
           <button id="clearHighlights" class="px-3 py-1 rounded-md border border-white/30 hover:bg-white/10">Clear highlights</button>
         </div>
-        <div class="translate-controls" data-active-lang="en">
-          <button type="button" id="translateToggle" class="translate-button" aria-haspopup="true" aria-expanded="false" aria-controls="translateMenu">
-            Translate
-          </button>
-          <div id="translateMenu" class="translate-menu" role="menu">
-            <button type="button" data-lang="en" role="menuitem" data-active="true">
-              English
-              <span class="lang-label">Original language</span>
-            </button>
-            <button type="button" data-lang="es" role="menuitem">
-              Español
-              <span class="lang-label">Spanish</span>
-            </button>
-            <button type="button" data-lang="fr" role="menuitem">
-              Français
-              <span class="lang-label">French</span>
-            </button>
-            <button type="button" data-lang="ar" role="menuitem">
-              العربية
-              <span class="lang-label">Arabic</span>
-            </button>
-          </div>
+        <!-- Language switcher -->
+        <div class="flex items-center gap-2">
+          <label for="langSelect" class="text-sm hidden sm:inline">Language</label>
+          <select id="langSelect" class="px-2 py-1 rounded-md border text-gray-900">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="ar">العربية</option>
+          </select>
         </div>
       </div>
     </div>
@@ -289,17 +212,19 @@
   <div class="bg-white max-w-4xl mx-auto my-8 p-4 sm:p-8 md:p-12 rounded-lg shadow-lg">
 
     <header class="border-b pb-6 mb-8">
-      <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+      <h2 id="t_articleTitle" class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
         The True Native New Yorkers Can Never Truly Reclaim Their Homeland
       </h2>
-      <p class="text-lg md:text-xl text-gray-600 font-light">
+      <p id="t_articleDek" class="text-lg md:text-xl text-gray-600 font-light">
         Nearly 400 years after the famous story about the “sale of Manhattan,” some Lenape people are working to bring back their cultural heritage in the place their ancestors once lived.
       </p>
       <div class="mt-6 flex items-center">
         <img class="w-12 h-12 rounded-full mr-4" src="https://th-thumbnailer.cdn-si-edu.com/CLazphHVw0_coZSdkW88Xl2y4Zg=/fit-in/160x80/filters:no_upscale()/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/accounts/headshot/colleenc.png" alt="Colleen Connolly">
         <div>
-          <p class="text-sm font-semibold text-gray-800">Colleen Connolly — Correspondent</p>
-          <p class="text-sm text-gray-500">October 5, 2018</p>
+          <p class="text-sm font-semibold text-gray-800">
+            <span id="t_bylineName">Colleen Connolly</span> - <span id="t_bylineRole">Correspondent</span>
+          </p>
+          <p id="t_bylineDate" class="text-sm text-gray-500">October 5, 2018</p>
         </div>
       </div>
 
@@ -307,114 +232,126 @@
       <div class="mt-6 flex items-center justify-end gap-2">
         <button id="resetProgress" class="text-sm px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50">Reset Progress</button>
       </div>
-      <p class="text-xs text-gray-500 mt-2">Guided Reading is always on. Progress saves on this device.</p>
+      <p id="t_alwaysOn" class="text-xs text-gray-500 mt-2">Guided Reading is always on. Progress saves on this device.</p>
     </header>
 
     <!-- ARTICLE -->
     <article id="articleRoot" class="prose lg:prose-xl max-w-none text-gray-800">
       <figure class="mb-8">
         <img src="https://th-thumbnailer.cdn-si-edu.com/shQQP2jJJkYYHk7j_uFL6dZkUeY=/1026x684/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/19/84/1984a5f2-122b-442f-9243-f2a2e3b123b0/img_9972_1.jpg" alt="Monument in lower Manhattan referencing a sale of Lenape lands" class="rounded-lg w-full">
-        <figcaption class="text-center text-sm text-gray-600 mt-2">
+        <figcaption id="t_fig1" class="text-center text-sm text-gray-600 mt-2">
           A monument in lower Manhattan commemorates the <strong>“sale” of Lenape lands</strong>.
         </figcaption>
       </figure>
 
       <!-- CHUNK 1 -->
-      <section class="chunk" data-chunk="1" aria-labelledby="c1-title">
-        <h3 id="c1-title" class="text-2xl font-bold">1) Early contact and a powerful myth</h3>
+      <section class="chunk" data-chunk="1" aria-labelledby="t_c1_title">
+        <h3 id="t_c1_title" class="text-2xl font-bold">1) Early contact and a powerful myth</h3>
         <div class="content">
-          <p>When the <strong>Dutch</strong> first arrived in the 1600s, their interactions with the Native people, the <strong>Lenape</strong>, were mostly friendly. They traded goods and shared the land. A well-known story says the Dutch <strong>“purchased” Manahatta island in 1626</strong>. But this deal, and the wall the Dutch later built around their settlement of <strong>New Amsterdam</strong>, marked the start of the <strong>Lenape's forced migration</strong> away from their home.</p>
-          <p>That defensive wall later became the famous <strong>Wall Street</strong>. A Lenape path called <strong>Wickquasgeck</strong> became a Dutch road, which then became <strong>Broadway</strong>. The Lenape helped shape New York City's layout, but many other signs of their history have almost disappeared. Today, some Lenape are working to bring their heritage back to the city.</p>
+          <p id="t_c1_p1">When the <strong>Dutch</strong> first arrived in the 1600s, their interactions with the Native people, the <strong>Lenape</strong>, were mostly friendly. They traded goods and shared the land. A well-known story says the Dutch <strong>“purchased” Manahatta island in 1626</strong>. But this deal, and the wall the Dutch later built around their settlement of <strong>New Amsterdam</strong>, marked the start of the <strong>Lenape's forced migration</strong> away from their home.</p>
+          <p id="t_c1_p2">That defensive wall later became the famous <strong>Wall Street</strong>. A Lenape path called <strong>Wickquasgeck</strong> became a Dutch road, which then became <strong>Broadway</strong>. The Lenape helped shape New York City's layout, but many other signs of their history have almost disappeared. Today, some Lenape are working to bring their heritage back to the city.</p>
         </div>
 
         <!-- Gate 1 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="1" aria-describedby="c1-help" onsubmit="return false">
-          <h4 class="m-0 text-lg font-semibold">Historical Context</h4>
-          <p id="c1-help" class="text-sm text-gray-600">The passage says a Lenape path became Broadway and a Dutch wall became Wall Street. What does this tell us about how New York City was built?</p>
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="1" aria-describedby="t_c1_prompt" onsubmit="return false">
+          <h4 id="t_c1_gateTitle" class="m-0 text-lg font-semibold">Historical Context</h4>
+          <p id="t_c1_prompt" class="text-sm text-gray-600">The passage says a Lenape path became Broadway and a Dutch wall became Wall Street. What does this tell us about how New York City was built?</p>
           <fieldset class="mt-2">
             <legend class="visually-hidden">Context</legend>
-            <label class="block my-1"><input type="radio" name="q1" value="a"> The Dutch built their city completely separate from any Lenape settlements.</label>
-            <label class="block my-1"><input type="radio" name="q1" value="b"> The city grew on top of Lenape foundations, often replacing their history.</label>
-            <label class="block my-1"><input type="radio" name="q1" value="c"> The Lenape and the Dutch worked together as equal partners to plan the city.</label>
-            <label class="block my-1"><input type="radio" name="q1" value="d"> The original Lenape names for all major streets are still used in NYC today.</label>
+            <label class="block my-1"><input type="radio" name="q1" value="a"> <span id="t_c1_a">The Dutch built their city completely separate from any Lenape settlements.</span></label>
+            <label class="block my-1"><input type="radio" name="q1" value="b"> <span id="t_c1_b">The city grew on top of Lenape foundations, often replacing their history.</span></label>
+            <label class="block my-1"><input type="radio" name="q1" value="c"> <span id="t_c1_c">The Lenape and the Dutch worked together as equal partners to plan the city.</span></label>
+            <label class="block my-1"><input type="radio" name="q1" value="d"> <span id="t_c1_d">The original Lenape names for all major streets are still used in NYC today.</span></label>
           </fieldset>
-          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
-          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q1">Attempts: 0</p>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md" id="t_checkBtn_1">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q1">
+            <span id="t_attemptsLabel_1">Attempts:</span>
+            <span class="attempt-count">0</span>
+          </p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
 
       <!-- CHUNK 2 -->
-      <section class="chunk blurred" data-chunk="2" aria-labelledby="c2-title" aria-hidden="true">
-        <h3 id="c2-title" class="text-2xl font-bold">2) Lenape identity and homeland</h3>
+      <section class="chunk blurred" data-chunk="2" aria-labelledby="t_c2_title" aria-hidden="true">
+        <h3 id="t_c2_title" class="text-2xl font-bold">2) Lenape identity and homeland</h3>
         <div class="content">
-          <p>“We have a history there before the white man ever showed up, but the Lenape are forgotten because they haven’t had a presence there in centuries,” says <strong>Curtis Zunigha</strong>, a leader at the <strong>Lenape Center</strong> in Manhattan. The center works to support Lenape culture. Mr. Zunigha, however, lives in <strong>Oklahoma</strong>. This is because many Lenape were forced to move there long ago.</p>
-          <p>The original Lenape homeland, called <strong>Lenapehoking</strong>, was a large area that covered parts of modern-day New York, New Jersey, Pennsylvania, and Delaware. Today, the two U.S. tribes that are officially recognized by the government as Delaware (another name for the Lenape) are both located in Oklahoma.</p>
+          <p id="t_c2_p1">“We have a history there before the white man ever showed up, but the Lenape are forgotten because they haven’t had a presence there in centuries,” says <strong>Curtis Zunigha</strong>, a leader at the <strong>Lenape Center</strong> in Manhattan. The center works to support Lenape culture. Mr. Zunigha, however, lives in <strong>Oklahoma</strong>. This is because many Lenape were forced to move there long ago.</p>
+          <p id="t_c2_p2">The original Lenape homeland, called <strong>Lenapehoking</strong>, was a large area that covered parts of modern-day New York, New Jersey, Pennsylvania, and Delaware. Today, the two U.S. tribes that are officially recognized by the government as Delaware (another name for the Lenape) are both located in Oklahoma.</p>
         </div>
 
         <!-- Gate 2 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="2" aria-describedby="c2-help" onsubmit="return false">
-          <h4 class="m-0 text-lg font-semibold">Claim and Evidence</h4>
-          <p id="c2-help" class="text-sm text-gray-600">Many Lenape people live far from NYC, but their connection to their homeland is still strong. Which piece of evidence best supports this claim?</p>
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="2" aria-describedby="t_c2_prompt" onsubmit="return false">
+          <h4 id="t_c2_gateTitle" class="m-0 text-lg font-semibold">Claim and Evidence</h4>
+          <p id="t_c2_prompt" class="text-sm text-gray-600">Many Lenape people live far from NYC, but their connection to their homeland is still strong. Which piece of evidence best supports this claim?</p>
           <fieldset class="mt-2">
             <legend class="visually-hidden">Claim–Evidence</legend>
-            <label class="block my-1"><input type="radio" name="q2" value="a"> There are no people with any Lenape heritage still living in the New York area.</label>
-            <label class="block my-1"><input type="radio" name="q2" value="b"> The Lenape have forgotten all of their historical ties to the island of Manhattan.</label>
-            <label class="block my-1"><input type="radio" name="q2" value="c"> The Lenape Center, based in Manhattan, works to keep the culture alive today.</label>
-            <label class="block my-1"><input type="radio" name="q2" value="d"> Lenape leaders in Oklahoma have stated they have no interest in their history.</label>
+            <label class="block my-1"><input type="radio" name="q2" value="a"> <span id="t_c2_a">There are no people with any Lenape heritage still living in the New York area.</span></label>
+            <label class="block my-1"><input type="radio" name="q2" value="b"> <span id="t_c2_b">The Lenape have forgotten all of their historical ties to the island of Manhattan.</span></label>
+            <label class="block my-1"><input type="radio" name="q2" value="c"> <span id="t_c2_c">The Lenape Center, based in Manhattan, works to keep the culture alive today.</span></label>
+            <label class="block my-1"><input type="radio" name="q2" value="d"> <span id="t_c2_d">Lenape leaders in Oklahoma have stated they have no interest in their history.</span></label>
           </fieldset>
-          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
-          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q2">Attempts: 0</p>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md" id="t_checkBtn_2">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q2">
+            <span id="t_attemptsLabel_2">Attempts:</span>
+            <span class="attempt-count">0</span>
+          </p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
 
       <!-- CHUNK 3 -->
-      <section class="chunk blurred" data-chunk="3" aria-labelledby="c3-title" aria-hidden="true">
-        <h3 id="c3-title" class="text-2xl font-bold">3) Migration routes and stigma</h3>
+      <section class="chunk blurred" data-chunk="3" aria-labelledby="t_c3_title" aria-hidden="true">
+        <h3 id="t_c3_title" class="text-2xl font-bold">3) Migration routes and stigma</h3>
         <div class="content">
-          <p>The Lenape were pushed from their homeland over many years. They first moved to Pennsylvania, then Ohio and Indiana, then Missouri, and then Kansas. After the Civil War, the U.S. government forced the Lenape in Kansas to sell their land for railroad construction. They then moved to <strong>Oklahoma</strong>, where many live today.</p>
-          <p>Some Lenape people did remain in their original homeland. <strong>Margaret Boldeagle</strong>'s family is one example. She says that many families felt pressure to <strong>assimilate</strong>, or fit in with the new culture. She explains that because of discrimination, or unfair treatment, some people hid their Native identity. “Back in the day, there was a stigma to being native,” she says. “So, a lot of families did not admit to it.”</p>
+          <p id="t_c3_p1">The Lenape were pushed from their homeland over many years. They first moved to Pennsylvania, then Ohio and Indiana, then Missouri, and then Kansas. After the Civil War, the U.S. government forced the Lenape in Kansas to sell their land for railroad construction. They then moved to <strong>Oklahoma</strong>, where many live today.</p>
+          <p id="t_c3_p2">Some Lenape people did remain in their original homeland. <strong>Margaret Boldeagle</strong>'s family is one example. She says that many families felt pressure to <strong>assimilate</strong>, or fit in with the new culture. She explains that because of discrimination, or unfair treatment, some people hid their Native identity. “Back in the day, there was a stigma to being native,” she says. “So, a lot of families did not admit to it.”</p>
         </div>
 
         <!-- Gate 3 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="3" aria-describedby="c3-help" onsubmit="return false">
-          <h4 class="m-0 text-lg font-semibold">Cause and Effect</h4>
-          <p id="c3-help" class="text-sm text-gray-600">The passage mentions a "stigma to being native." What was a direct result of this unfair treatment and the pressure people felt to assimilate?</p>
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="3" aria-describedby="t_c3_prompt" onsubmit="return false">
+          <h4 id="t_c3_gateTitle" class="m-0 text-lg font-semibold">Cause and Effect</h4>
+          <p id="t_c3_prompt" class="text-sm text-gray-600">The passage mentions a "stigma to being native." What was a direct result of this unfair treatment and the pressure people felt to assimilate?</p>
           <fieldset class="mt-2">
             <legend class="visually-hidden">Cause–Effect</legend>
-            <label class="block my-1"><input type="radio" name="q3" value="a"> The U.S. government celebrated and recognized all of the local Native tribes.</label>
-            <label class="block my-1"><input type="radio" name="q3" value="b"> It led to a great period of peace and shared cultural celebrations for all.</label>
-            <label class="block my-1"><input type="radio" name="q3" value="c"> Many Lenape families felt they had to hide their heritage to avoid mistreatment.</label>
-            <label class="block my-1"><input type="radio" name="q3" value="d"> European settlers started to adopt the traditional clothing of the Lenape people.</label>
+            <label class="block my-1"><input type="radio" name="q3" value="a"> <span id="t_c3_a">The U.S. government celebrated and recognized all of the local Native tribes.</span></label>
+            <label class="block my-1"><input type="radio" name="q3" value="b"> <span id="t_c3_b">It led to a great period of peace and shared cultural celebrations for all.</span></label>
+            <label class="block my-1"><input type="radio" name="q3" value="c"> <span id="t_c3_c">Many Lenape families felt they had to hide their heritage to avoid mistreatment.</span></label>
+            <label class="block my-1"><input type="radio" name="q3" value="d"> <span id="t_c3_d">European settlers started to adopt the traditional clothing of the Lenape people.</span></label>
           </fieldset>
-          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
-          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q3">Attempts: 0</p>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md" id="t_checkBtn_3">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q3">
+            <span id="t_attemptsLabel_3">Attempts:</span>
+            <span class="attempt-count">0</span>
+          </p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
 
       <!-- CHUNK 4 -->
-      <section class="chunk blurred" data-chunk="4" aria-labelledby="c4-title" aria-hidden="true">
-        <h3 id="c4-title" class="text-2xl font-bold">4) Monuments and the Manhattan story</h3>
+      <section class="chunk blurred" data-chunk="4" aria-labelledby="t_c4_title" aria-hidden="true">
+        <h3 id="t_c4_title" class="text-2xl font-bold">4) Monuments and the Manhattan story</h3>
         <div class="content">
-          <p>Today, two memorials in New York City mention the Lenape, but both tell a story that is not quite right. A monument in Battery Park and a plaque in Inwood Hill Park both commemorate the <strong>“sale of Manhattan,”</strong> continuing a myth that many experts say is a made-up story.</p>
-          <p>The plaque in Inwood Hill Park even claims the deal happened there, though it was more likely made at Fort Amsterdam in lower Manhattan. More importantly, experts say the Lenape probably saw the deal as an agreement to <strong>share the land</strong>, not to sell it forever. The Dutch, however, saw it as a final sale. Notes from a council meeting in 1660 show the Dutch were frustrated that the Lenape would not leave. The Lenape responded that they had only sold the grass, not the land itself.</p>
+          <p id="t_c4_p1">Today, two memorials in New York City mention the Lenape, but both tell a story that is not quite right. A monument in Battery Park and a plaque in Inwood Hill Park both commemorate the <strong>“sale of Manhattan,”</strong> continuing a myth that many experts say is a made-up story.</p>
+          <p id="t_c4_p2">The plaque in Inwood Hill Park even claims the deal happened there, though it was more likely made at Fort Amsterdam in lower Manhattan. More importantly, experts say the Lenape probably saw the deal as an agreement to <strong>share the land</strong>, not to sell it forever. The Dutch, however, saw it as a final sale. Notes from a council meeting in 1660 show the Dutch were frustrated that the Lenape would not leave. The Lenape responded that they had only sold the grass, not the land itself.</p>
         </div>
 
         <!-- Gate 4 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="4" aria-describedby="c4-help" onsubmit="return false">
-          <h4 class="m-0 text-lg font-semibold">Point of View</h4>
-          <p id="c4-help" class="text-sm text-gray-600">The passage describes a major disagreement over the “sale of Manhattan.” What is the key difference between the Lenape and Dutch points of view?</p>
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="4" aria-describedby="t_c4_prompt" onsubmit="return false">
+          <h4 id="t_c4_gateTitle" class="m-0 text-lg font-semibold">Point of View</h4>
+          <p id="t_c4_prompt" class="text-sm text-gray-600">The passage describes a major disagreement over the “sale of Manhattan.” What is the key difference between the Lenape and Dutch points of view?</p>
           <fieldset class="mt-2">
             <legend class="visually-hidden">POV</legend>
-            <label class="block my-1"><input type="radio" name="q4" value="a"> Both the Lenape and Dutch agreed the land would be returned after a few years.</label>
-            <label class="block my-1"><input type="radio" name="q4" value="b"> The Lenape wanted to sell the land, but the Dutch only wanted to rent it.</label>
-            <label class="block my-1"><input type="radio" name="q4" value="c"> The Dutch saw it as a one-time sale, while the Lenape saw it as a deal to share.</label>
-            <label class="block my-1"><input type="radio" name="q4" value="d"> The deal was only about trading furs and had nothing at all to do with the land.</label>
+            <label class="block my-1"><input type="radio" name="q4" value="a"> <span id="t_c4_a">Both the Lenape and Dutch agreed the land would be returned after a few years.</span></label>
+            <label class="block my-1"><input type="radio" name="q4" value="b"> <span id="t_c4_b">The Lenape wanted to sell the land, but the Dutch only wanted to rent it.</span></label>
+            <label class="block my-1"><input type="radio" name="q4" value="c"> <span id="t_c4_c">The Dutch saw it as a one-time sale, while the Lenape saw it as a deal to share.</span></label>
+            <label class="block my-1"><input type="radio" name="q4" value="d"> <span id="t_c4_d">The deal was only about trading furs and had nothing at all to do with the land.</span></label>
           </fieldset>
-          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
-          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q4">Attempts: 0</p>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md" id="t_checkBtn_4">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q4">
+            <span id="t_attemptsLabel_4">Attempts:</span>
+            <span class="attempt-count">0</span>
+          </p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -422,32 +359,35 @@
       <!-- Figure -->
       <figure class="my-8">
         <img src="https://th-thumbnailer.cdn-si-edu.com/Qll0z1MjUP0gwuED-nVqZXViXTY=/fit-in/1072x0/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/2a/0e/2a0e65f8-bb9b-4b2d-b6ef-e9badec846ab/ap_091127023900.jpg" alt="Healing ceremony in 2009" class="rounded-lg w-full">
-        <figcaption class="text-center text-sm text-gray-600 mt-2">
+        <figcaption id="t_fig2" class="text-center text-sm text-gray-600 mt-2">
           A 2009 healing ceremony involving Lenape communities and the Collegiate Church.
         </figcaption>
       </figure>
 
       <!-- CHUNK 5 -->
-      <section class="chunk blurred" data-chunk="5" aria-labelledby="c5-title" aria-hidden="true">
-        <h3 id="c5-title" class="text-2xl font-bold">5) Language work and cultural continuity</h3>
+      <section class="chunk blurred" data-chunk="5" aria-labelledby="t_c5_title" aria-hidden="true">
+        <h3 id="t_c5_title" class="text-2xl font-bold">5) Language work and cultural continuity</h3>
         <div class="content">
-          <p>Even though monuments might tell an old story, Lenape culture remains alive today. In Oklahoma, the Delaware Tribe hosts camps for children to learn <strong>Lenape spiritual practices</strong>, songs, and dances. They have also worked hard to help save the endangered Lenape language, as there are very few fluent speakers left.</p>
-          <p><strong>Jim Rementer</strong> has studied the language for over 50 years. He helped create the <strong>Lenape Talking Dictionary</strong>, which has online lessons with audio. While there are no native speakers in Oklahoma today, he says people are still very interested in learning. He explains that being able to use their native language in prayers and ceremonies helps connect them to their culture and ancestors, keeping it strong for the next generation.</p>
+          <p id="t_c5_p1">Even though monuments might tell an old story, Lenape culture remains alive today. In Oklahoma, the Delaware Tribe hosts camps for children to learn <strong>Lenape spiritual practices</strong>, songs, and dances. They have also worked hard to help save the endangered Lenape language, as there are very few fluent speakers left.</p>
+          <p id="t_c5_p2"><strong>Jim Rementer</strong> has studied the language for over 50 years. He helped create the <strong>Lenape Talking Dictionary</strong>, which has online lessons with audio. While there are no native speakers in Oklahoma today, he says people are still very interested in learning. He explains that being able to use their native language in prayers and ceremonies helps connect them to their culture and ancestors, keeping it strong for the next generation.</p>
         </div>
 
         <!-- Gate 5 -->
-        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="5" aria-describedby="c5-help" onsubmit="return false">
-          <h4 class="m-0 text-lg font-semibold">Central Idea</h4>
-          <p id="c5-help" class="text-sm text-gray-600">Despite being forced from their homes, the Lenape culture has survived. Which detail is the best proof of this cultural survival?</p>
+        <form class="gate mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50" data-for="5" aria-describedby="t_c5_prompt" onsubmit="return false">
+          <h4 id="t_c5_gateTitle" class="m-0 text-lg font-semibold">Central Idea</h4>
+          <p id="t_c5_prompt" class="text-sm text-gray-600">Despite being forced from their homes, the Lenape culture has survived. Which detail is the best proof of this cultural survival?</p>
           <fieldset class="mt-2">
             <legend class="visually-hidden">Central Idea</legend>
-            <label class="block my-1"><input type="radio" name="q5" value="a"> Modern monuments in NYC tell the complete and accurate history of the Lenape.</label>
-            <label class="block my-1"><input type="radio" name="q5" value="b"> The area around Wall Street is now a very important global financial center.</label>
-            <label class="block my-1"><input type="radio" name="q5" value="c"> The original Lenape paths are no longer visible anywhere in modern Manhattan.</label>
-            <label class="block my-1"><input type="radio" name="q5" value="d"> Cultural camps and the Lenape Talking Dictionary preserve traditions and language.</label>
+            <label class="block my-1"><input type="radio" name="q5" value="a"> <span id="t_c5_a">Modern monuments in NYC tell the complete and accurate history of the Lenape.</span></label>
+            <label class="block my-1"><input type="radio" name="q5" value="b"> <span id="t_c5_b">The area around Wall Street is now a very important global financial center.</span></label>
+            <label class="block my-1"><input type="radio" name="q5" value="c"> <span id="t_c5_c">The original Lenape paths are no longer visible anywhere in modern Manhattan.</span></label>
+            <label class="block my-1"><input type="radio" name="q5" value="d"> <span id="t_c5_d">Cultural camps and the Lenape Talking Dictionary preserve traditions and language.</span></label>
           </fieldset>
-          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md">Check</button>
-          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q5">Attempts: 0</p>
+          <button type="submit" class="nx-btn mt-2 px-3 py-2 rounded-md" id="t_checkBtn_5">Check</button>
+          <p class="attempt-counter text-xs text-gray-500 mt-2" data-question="q5">
+            <span id="t_attemptsLabel_5">Attempts:</span>
+            <span class="attempt-count">0</span>
+          </p>
           <div class="feedback mt-2 text-sm" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -458,27 +398,27 @@
     </article>
 
     <section class="mt-12 p-6 sm:p-8 bg-purple-50 border border-purple-200 rounded-xl shadow-inner">
-      <h3 class="text-2xl font-bold text-purple-900">SEL Reflection &amp; R.A.C.E. Response</h3>
-      <p class="mt-3 text-gray-800">
+      <h3 id="t_refTitle" class="text-2xl font-bold text-purple-900">SEL Reflection &amp; R.A.C.E. Response</h3>
+      <p id="t_refIntro1" class="mt-3 text-gray-800">
         Take a mindful pause to connect with the Lenape story and with your own community. Respond to the prompt below using the
         <strong>R.A.C.E. strategy</strong>—<strong>R</strong>estate the question, <strong>A</strong>nswer it clearly, <strong>C</strong>ite evidence from the article, and <strong>E</strong>xplain how that evidence shows your understanding and feelings.
       </p>
-      <p class="mt-2 text-gray-700">
+      <p id="t_refPrompt" class="mt-2 text-gray-700">
         Prompt: <em>How does learning about the Lenape people’s resilience and care for their homeland influence the way you support and empathize with others in your life?</em>
       </p>
 
       <form id="submissionForm" class="mt-4 space-y-4" novalidate>
         <label class="block">
-          <span class="text-sm font-semibold text-gray-700">Write your R.A.C.E. paragraph below (no copy or paste allowed):</span>
+          <span id="t_refFieldLabel" class="text-sm font-semibold text-gray-700">Write your R.A.C.E. paragraph below (no copy or paste allowed):</span>
           <textarea id="reflectionResponse" class="mt-2 w-full rounded-lg border border-purple-200 focus:border-purple-500 focus:ring-purple-500 p-3 shadow-sm" rows="8" placeholder="Restate the prompt, answer it, cite a specific detail from the article, and explain how it connects to your own actions." required></textarea>
         </label>
-        <p class="text-xs text-gray-600">Typing only—pasting is disabled to make sure this is your own thinking.</p>
+        <p id="t_typingOnly" class="text-xs text-gray-600">Typing only—pasting is disabled to make sure this is your own thinking.</p>
         <div class="flex items-center justify-between gap-4 flex-col sm:flex-row">
-          <p class="text-sm text-gray-700">Your work stays saved on this Chromebook until you press Submit.</p>
+          <p id="t_savedMsg" class="text-sm text-gray-700">Your work stays saved on this Chromebook until you press Submit.</p>
           <div class="flex items-center gap-2">
-            <button type="submit" class="nx-btn px-4 py-2 rounded-md shadow">Submit All Work</button>
+            <button type="submit" class="nx-btn px-4 py-2 rounded-md shadow" id="t_submitAll">Submit All Work</button>
             <button type="button" id="pingEndpoint" class="px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50 text-sm">
-              Check connection
+              <span id="t_checkConn">Check connection</span>
             </button>
             <span id="pingStatus" class="text-sm ml-2"></span>
           </div>
@@ -488,34 +428,34 @@
 
       <div class="mt-8 space-y-4">
         <section class="p-5 rounded-xl bg-white border border-purple-200 shadow-sm">
-          <h4 class="text-lg font-semibold text-purple-900">R.A.C.E. Quick Reminder</h4>
-          <p class="mt-2 text-sm text-gray-800">
+          <h4 id="t_raceRemindTitle" class="text-lg font-semibold text-purple-900">R.A.C.E. Quick Reminder</h4>
+          <p id="t_raceRemindP1" class="mt-2 text-sm text-gray-800">
             Start with <strong>one sentence</strong> that restates the prompt and gives your answer at the same time. Example: <em>"The question asks how teamwork helps our class, so teamwork helps because we share the jobs and cheer each other on."</em>
           </p>
-          <p class="mt-2 text-sm text-gray-700">
+          <p id="t_raceRemindP2" class="mt-2 text-sm text-gray-700">
             After that sentence, include evidence from the article and explain how it connects to your own actions or feelings.
           </p>
         </section>
 
         <section class="p-5 rounded-xl bg-white border border-purple-200 shadow-sm">
-          <h4 class="text-lg font-semibold text-purple-900">R.A.C.E. Paragraph Rubric</h4>
-          <p class="mt-2 text-sm text-gray-700">Check each box to make sure your paragraph shines.</p>
+          <h4 id="t_raceRubricTitle" class="text-lg font-semibold text-purple-900">R.A.C.E. Paragraph Rubric</h4>
+          <p id="t_raceRubricIntro" class="mt-2 text-sm text-gray-700">Check each box to make sure your paragraph shines.</p>
           <ul class="mt-4 space-y-3 text-sm text-gray-800">
             <li class="flex items-start gap-3">
               <span class="mt-1 h-3 w-3 rounded-full bg-green-400"></span>
-              <span><strong>Restate &amp; Answer:</strong> Open with the prompt in your own words and answer it clearly in the same sentence.</span>
+              <span id="t_r1"><strong>Restate &amp; Answer:</strong> Open with the prompt in your own words and answer it clearly in the same sentence.</span>
             </li>
             <li class="flex items-start gap-3">
               <span class="mt-1 h-3 w-3 rounded-full bg-blue-400"></span>
-              <span><strong>Evidence:</strong> Include a specific fact or quote from the article to support your thinking.</span>
+              <span id="t_r2"><strong>Evidence:</strong> Include a specific fact or quote from the article to support your thinking.</span>
             </li>
             <li class="flex items-start gap-3">
               <span class="mt-1 h-3 w-3 rounded-full bg-purple-400"></span>
-              <span><strong>Explanation:</strong> Connect the evidence to your experiences, feelings, or actions.</span>
+              <span id="t_r3"><strong>Explanation:</strong> Connect the evidence to your experiences, feelings, or actions.</span>
             </li>
             <li class="flex items-start gap-3">
               <span class="mt-1 h-3 w-3 rounded-full bg-yellow-400"></span>
-              <span><strong>Writing Moves:</strong> Use complete sentences, transition words, and a positive closing thought.</span>
+              <span id="t_r4"><strong>Writing Moves:</strong> Use complete sentences, transition words, and a positive closing thought.</span>
             </li>
           </ul>
         </section>
@@ -524,147 +464,13 @@
   </div>
 
   <footer class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-500">
-    © Northside Charter High School • U.S. History Regents Prep
+    <span id="t_footer">© Northside Charter High School • U.S. History Regents Prep</span>
   </footer>
 
   <!-- Toast node -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <div id="google_translate_element" aria-hidden="true"></div>
 
   <script>
-    /* ========== Translation Loader ========== */
-    const translatorManager = (() => {
-      let resolveReady;
-      const readyPromise = new Promise(resolve => { resolveReady = resolve; });
-
-      window.__initGoogleTranslate = function() {
-        if (typeof google === "undefined" || !google.translate) {
-          resolveReady();
-          return;
-        }
-        new google.translate.TranslateElement({
-          pageLanguage: "en",
-          includedLanguages: "ar,es,fr",
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        }, "google_translate_element");
-        resolveReady();
-      };
-
-      const script = document.createElement("script");
-      script.src = "https://translate.google.com/translate_a/element.js?cb=__initGoogleTranslate";
-      script.async = true;
-      script.defer = true;
-      script.addEventListener("error", () => resolveReady());
-      document.head.appendChild(script);
-
-      function withCombo(cb, attempt = 0) {
-        readyPromise.then(() => {
-          const combo = document.querySelector(".goog-te-combo");
-          if (combo) {
-            cb(combo);
-          } else if (attempt < 80) {
-            setTimeout(() => withCombo(cb, attempt + 1), 100);
-          }
-        }).catch(() => {});
-      }
-
-      return { withCombo, readyPromise };
-    })();
-
-    (function initTranslationControls() {
-      const translateControls = document.querySelector(".translate-controls");
-      if (!translateControls) return;
-
-      const toggle = document.getElementById("translateToggle");
-      const menu = document.getElementById("translateMenu");
-      if (!toggle || !menu) return;
-
-      const buttons = Array.from(menu.querySelectorAll("button[data-lang]"));
-      let isMenuOpen = false;
-
-      function setActiveLanguage(lang) {
-        translateControls.dataset.activeLang = lang;
-        buttons.forEach(btn => {
-          if (btn.dataset.lang === lang) {
-            btn.setAttribute("data-active", "true");
-          } else {
-            btn.removeAttribute("data-active");
-          }
-        });
-      }
-
-      function closeMenu() {
-        if (!isMenuOpen) return;
-        isMenuOpen = false;
-        menu.classList.remove("show");
-        toggle.setAttribute("aria-expanded", "false");
-      }
-
-      function openMenu() {
-        if (isMenuOpen) return;
-        isMenuOpen = true;
-        menu.classList.add("show");
-        toggle.setAttribute("aria-expanded", "true");
-        const activeLang = translateControls.dataset.activeLang || "en";
-        const activeButton = menu.querySelector(`button[data-lang="${activeLang}"]`) || buttons[0];
-        if (activeButton) {
-          setTimeout(() => activeButton.focus({ preventScroll: true }), 20);
-        }
-      }
-
-      toggle.addEventListener("click", () => {
-        if (isMenuOpen) {
-          closeMenu();
-        } else {
-          openMenu();
-        }
-      });
-
-      document.addEventListener("click", (event) => {
-        if (!translateControls.contains(event.target)) {
-          closeMenu();
-        }
-      });
-
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && isMenuOpen) {
-          event.preventDefault();
-          closeMenu();
-          toggle.focus();
-        }
-      });
-
-      menu.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          closeMenu();
-          toggle.focus();
-        }
-      });
-
-      function applyLanguage(lang) {
-        setActiveLanguage(lang);
-        const targetLang = lang === "en" ? "" : lang;
-        translatorManager.withCombo(combo => {
-          if (combo.value === targetLang) return;
-          combo.value = targetLang;
-          combo.dispatchEvent(new Event("change"));
-        });
-      }
-
-      buttons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const lang = btn.dataset.lang;
-          applyLanguage(lang);
-          closeMenu();
-          toggle.focus();
-        });
-      });
-
-      setActiveLanguage(translateControls.dataset.activeLang || "en");
-    })();
-
     /* ========== Utility: Toast ========== */
     const toastEl = document.getElementById("toast");
     let toastTimer = null;
@@ -926,8 +732,20 @@
         const qKey = "q" + gate.dataset.for;
         const counter = gate.querySelector('.attempt-counter');
         if (!counter) return;
-        const count = progress.attempts?.[qKey] || 0;
-        counter.textContent = `Attempts: ${count}`;
+        const count = Number(progress.attempts?.[qKey] || 0);
+        let countSpan = counter.querySelector('.attempt-count');
+        if (!countSpan) {
+          countSpan = document.createElement('span');
+          countSpan.className = 'attempt-count';
+          const labelSpan = counter.querySelector('[id^="t_attemptsLabel_"]');
+          if (labelSpan) {
+            labelSpan.insertAdjacentText('afterend', ' ');
+            labelSpan.insertAdjacentElement('afterend', countSpan);
+          } else {
+            counter.appendChild(countSpan);
+          }
+        }
+        countSpan.textContent = String(count);
       });
     }
 
@@ -1010,7 +828,9 @@
       if (timestampInput) refreshEasternTimestamp();
       saveProgress();
       document.querySelectorAll(".gate .feedback").forEach(el => el.textContent = "");
-      document.querySelectorAll('.attempt-counter').forEach(el => el.textContent = "Attempts: 0");
+      document.querySelectorAll('.attempt-counter .attempt-count').forEach(span => {
+        span.textContent = '0';
+      });
       if (reflectionField) reflectionField.value = "";
       if (submitStatus) {
         submitStatus.textContent = "";
@@ -1566,6 +1386,354 @@
     const article = document.getElementById("articleRoot");
     if (!article) return;
     annotateGlossary(article);
+  })();
+  </script>
+
+  <script>
+  /* ========= i18n translations ========= */
+  const I18N = {
+    en: {
+      t_studentInfo: "Student Info",
+      t_nameLabel: "Student Name (First Name, Last Name)",
+      t_timeLabel: "Timestamp (Eastern)",
+      t_periodLabel: "Period",
+      t_savedNote: "Saved on this Chromebook for next time.",
+      t_guidedReading: "Guided Reading Mode",
+      t_alwaysOn: "Guided Reading is always on. Progress saves on this device.",
+      t_articleTitle: "The True Native New Yorkers Can Never Truly Reclaim Their Homeland",
+      t_articleDek:
+        "Nearly 400 years after the famous story about the “sale of Manhattan,” some Lenape people are working to bring back their cultural heritage in the place their ancestors once lived.",
+      t_bylineName: "Colleen Connolly",
+      t_bylineRole: "Correspondent",
+      t_bylineDate: "October 5, 2018",
+      t_fig1: 'A monument in lower Manhattan commemorates the <strong>“sale” of Lenape lands</strong>.',
+      t_c1_title: "1) Early contact and a powerful myth",
+      t_c1_p1:
+        'When the <strong>Dutch</strong> first arrived in the 1600s, their interactions with the Native people, the <strong>Lenape</strong>, were mostly friendly. They traded goods and shared the land. A well-known story says the Dutch <strong>“purchased” Manahatta island in 1626</strong>. But this deal, and the wall the Dutch later built around their settlement of <strong>New Amsterdam</strong>, marked the start of the <strong>Lenape\'s forced migration</strong> away from their home.',
+      t_c1_p2:
+        'That defensive wall later became the famous <strong>Wall Street</strong>. A Lenape path called <strong>Wickquasgeck</strong> became a Dutch road, which then became <strong>Broadway</strong>. The Lenape helped shape New York City\'s layout, but many other signs of their history have almost disappeared. Today, some Lenape are working to bring their heritage back to the city.',
+      t_c1_gateTitle: "Historical Context",
+      t_c1_prompt:
+        "The passage says a Lenape path became Broadway and a Dutch wall became Wall Street. What does this tell us about how New York City was built?",
+      t_c1_a: "The Dutch built their city completely separate from any Lenape settlements.",
+      t_c1_b: "The city grew on top of Lenape foundations, often replacing their history.",
+      t_c1_c: "The Lenape and the Dutch worked together as equal partners to plan the city.",
+      t_c1_d: "The original Lenape names for all major streets are still used in NYC today.",
+      t_fig2: "A 2009 healing ceremony involving Lenape communities and the Collegiate Church.",
+      t_c2_title: "2) Lenape identity and homeland",
+      t_c2_p1:
+        "“We have a history there before the white man ever showed up, but the Lenape are forgotten because they haven’t had a presence there in centuries,” says <strong>Curtis Zunigha</strong>, a leader at the <strong>Lenape Center</strong> in Manhattan. The center works to support Lenape culture. Mr. Zunigha, however, lives in <strong>Oklahoma</strong>. This is because many Lenape were forced to move there long ago.",
+      t_c2_p2:
+        "The original Lenape homeland, called <strong>Lenapehoking</strong>, was a large area that covered parts of modern-day New York, New Jersey, Pennsylvania, and Delaware. Today, the two U.S. tribes that are officially recognized by the government as Delaware (another name for the Lenape) are both located in Oklahoma.",
+      t_c2_gateTitle: "Claim and Evidence",
+      t_c2_prompt:
+        "Many Lenape people live far from NYC, but their connection to their homeland is still strong. Which piece of evidence best supports this claim?",
+      t_c2_a: "There are no people with any Lenape heritage still living in the New York area.",
+      t_c2_b: "The Lenape have forgotten all of their historical ties to the island of Manhattan.",
+      t_c2_c: "The Lenape Center, based in Manhattan, works to keep the culture alive today.",
+      t_c2_d: "Lenape leaders in Oklahoma have stated they have no interest in their history.",
+      t_c3_title: "3) Migration routes and stigma",
+      t_c3_p1:
+        "The Lenape were pushed from their homeland over many years. They first moved to Pennsylvania, then Ohio and Indiana, then Missouri, and then Kansas. After the Civil War, the U.S. government forced the Lenape in Kansas to sell their land for railroad construction. They then moved to <strong>Oklahoma</strong>, where many live today.",
+      t_c3_p2:
+        "Some Lenape people did remain in their original homeland. <strong>Margaret Boldeagle</strong>'s family is one example. She says that many families felt pressure to <strong>assimilate</strong>, or fit in with the new culture. She explains that because of discrimination, or unfair treatment, some people hid their Native identity. “Back in the day, there was a stigma to being native,” she says. “So, a lot of families did not admit to it.”",
+      t_c3_gateTitle: "Cause and Effect",
+      t_c3_prompt:
+        'The passage mentions a "stigma to being native." What was a direct result of this unfair treatment and the pressure people felt to assimilate?',
+      t_c3_a: "The U.S. government celebrated and recognized all of the local Native tribes.",
+      t_c3_b: "It led to a great period of peace and shared cultural celebrations for all.",
+      t_c3_c: "Many Lenape families felt they had to hide their heritage to avoid mistreatment.",
+      t_c3_d: "European settlers started to adopt the traditional clothing of the Lenape people.",
+      t_c4_title: "4) Monuments and the Manhattan story",
+      t_c4_p1:
+        "Today, two memorials in New York City mention the Lenape, but both tell a story that is not quite right. A monument in Battery Park and a plaque in Inwood Hill Park both commemorate the <strong>“sale of Manhattan,”</strong> continuing a myth that many experts say is a made-up story.",
+      t_c4_p2:
+        "The plaque in Inwood Hill Park even claims the deal happened there, though it was more likely made at Fort Amsterdam in lower Manhattan. More importantly, experts say the Lenape probably saw the deal as an agreement to <strong>share the land</strong>, not to sell it forever. The Dutch, however, saw it as a final sale. Notes from a council meeting in 1660 show the Dutch were frustrated that the Lenape would not leave. The Lenape responded that they had only sold the grass, not the land itself.",
+      t_c4_gateTitle: "Point of View",
+      t_c4_prompt:
+        "The passage describes a major disagreement over the “sale of Manhattan.” What is the key difference between the Lenape and Dutch points of view?",
+      t_c4_a: "Both the Lenape and Dutch agreed the land would be returned after a few years.",
+      t_c4_b: "The Lenape wanted to sell the land, but the Dutch only wanted to rent it.",
+      t_c4_c: "The Dutch saw it as a one-time sale, while the Lenape saw it as a deal to share.",
+      t_c4_d: "The deal was only about trading furs and had nothing at all to do with the land.",
+      t_c5_title: "5) Language work and cultural continuity",
+      t_c5_p1:
+        "Even though monuments might tell an old story, Lenape culture remains alive today. In Oklahoma, the Delaware Tribe hosts camps for children to learn <strong>Lenape spiritual practices</strong>, songs, and dances. They have also worked hard to help save the endangered Lenape language, as there are very few fluent speakers left.",
+      t_c5_p2:
+        "<strong>Jim Rementer</strong> has studied the language for over 50 years. He helped create the <strong>Lenape Talking Dictionary</strong>, which has online lessons with audio. While there are no native speakers in Oklahoma today, he says people are still very interested in learning. He explains that being able to use their native language in prayers and ceremonies helps connect them to their culture and ancestors, keeping it strong for the next generation.",
+      t_c5_gateTitle: "Central Idea",
+      t_c5_prompt:
+        "Despite being forced from their homes, the Lenape culture has survived. Which detail is the best proof of this cultural survival?",
+      t_c5_a: "Modern monuments in NYC tell the complete and accurate history of the Lenape.",
+      t_c5_b: "The area around Wall Street is now a very important global financial center.",
+      t_c5_c: "The original Lenape paths are no longer visible anywhere in modern Manhattan.",
+      t_c5_d: "Cultural camps and the Lenape Talking Dictionary preserve traditions and language.",
+      t_fig2: "A 2009 healing ceremony involving Lenape communities and the Collegiate Church.",
+      t_refTitle: "SEL Reflection & R.A.C.E. Response",
+      t_refIntro1:
+        "Take a mindful pause to connect with the Lenape story and with your own community. Respond to the prompt below using the <strong>R.A.C.E. strategy</strong> — <strong>R</strong>estate the question, <strong>A</strong>nswer it clearly, <strong>C</strong>ite evidence from the article, and <strong>E</strong>xplain how that evidence shows your understanding and feelings.",
+      t_refPrompt:
+        "Prompt: <em>How does learning about the Lenape people’s resilience and care for their homeland influence the way you support and empathize with others in your life?</em>",
+      t_refFieldLabel: "Write your R.A.C.E. paragraph below (no copy or paste allowed):",
+      t_typingOnly: "Typing only. Pasting is disabled to make sure this is your own thinking.",
+      t_savedMsg: "Your work stays saved on this Chromebook until you press Submit.",
+      t_submitAll: "Submit All Work",
+      t_checkConn: "Check connection",
+      t_raceRemindTitle: "R.A.C.E. Quick Reminder",
+      t_raceRemindP1:
+        'Start with <strong>one sentence</strong> that restates the prompt and gives your answer at the same time. Example: <em>"The question asks how teamwork helps our class, so teamwork helps because we share the jobs and cheer each other on."</em>',
+      t_raceRemindP2:
+        "After that sentence, include evidence from the article and explain how it connects to your own actions or feelings.",
+      t_raceRubricTitle: "R.A.C.E. Paragraph Rubric",
+      t_raceRubricIntro: "Check each box to make sure your paragraph shines.",
+      t_r1: "<strong>Restate & Answer:</strong> Open with the prompt in your own words and answer it clearly in the same sentence.",
+      t_r2: "<strong>Evidence:</strong> Include a specific fact or quote from the article to support your thinking.",
+      t_r3: "<strong>Explanation:</strong> Connect the evidence to your experiences, feelings, or actions.",
+      t_r4: "<strong>Writing Moves:</strong> Use complete sentences, transition words, and a positive closing thought.",
+      t_footer: "© Northside Charter High School • U.S. History Regents Prep",
+      // per-chunk buttons/labels
+      t_checkBtn_1: "Check", t_attemptsLabel_1: "Attempts:",
+      t_checkBtn_2: "Check", t_attemptsLabel_2: "Attempts:",
+      t_checkBtn_3: "Check", t_attemptsLabel_3: "Attempts:",
+      t_checkBtn_4: "Check", t_attemptsLabel_4: "Attempts:",
+      t_checkBtn_5: "Check", t_attemptsLabel_5: "Attempts:"
+    },
+
+    es: {
+      t_studentInfo: "Información del estudiante",
+      t_nameLabel: "Nombre del estudiante (Nombre, Apellido)",
+      t_timeLabel: "Hora (Este)",
+      t_periodLabel: "Periodo",
+      t_savedNote: "Guardado en este Chromebook para la próxima vez.",
+      t_guidedReading: "Modo de lectura guiada",
+      t_alwaysOn: "La lectura guiada está siempre activada. El progreso se guarda en este dispositivo.",
+      t_articleTitle: "Los verdaderos nativos neoyorquinos no pueden recuperar por completo su tierra",
+      t_articleDek:
+        "Casi 400 años después de la famosa historia sobre la “venta de Manhattan”, algunas personas lenape trabajan para recuperar su patrimonio cultural en el lugar donde vivieron sus antepasados.",
+      t_bylineName: "Colleen Connolly",
+      t_bylineRole: "Corresponsal",
+      t_bylineDate: "5 de octubre de 2018",
+      t_fig1: 'Un monumento en el bajo Manhattan conmemora la <strong>“venta” de tierras lenape</strong>.',
+      t_c1_title: "1) Primeros contactos y un mito poderoso",
+      t_c1_p1:
+        "Cuando llegaron los <strong>holandeses</strong> en el siglo XVII, sus interacciones con los <strong>lenape</strong> fueron en su mayoría amistosas. Intercambiaban bienes y compartían la tierra. Una historia conocida dice que los holandeses <strong>“compraron” la isla de Manahatta en 1626</strong>. Pero ese trato, y el muro que luego construyeron alrededor de <strong>Nueva Ámsterdam</strong>, marcó el inicio de la <strong>migración forzada</strong> de los lenape lejos de su hogar.",
+      t_c1_p2:
+        "Aquel muro defensivo se convirtió después en la famosa <strong>Wall Street</strong>. Un camino lenape llamado <strong>Wickquasgeck</strong> se volvió una carretera holandesa y luego <strong>Broadway</strong>. Los lenape ayudaron a dar forma al trazado de la ciudad de Nueva York, pero muchas otras huellas de su historia casi han desaparecido. Hoy, algunos lenape trabajan para devolver su herencia a la ciudad.",
+      t_c1_gateTitle: "Contexto histórico",
+      t_c1_prompt:
+        "El texto dice que un sendero lenape se convirtió en Broadway y un muro holandés en Wall Street. ¿Qué nos dice esto sobre cómo se construyó Nueva York?",
+      t_c1_a: "Los holandeses construyeron su ciudad completamente separada de los asentamientos lenape.",
+      t_c1_b: "La ciudad creció sobre bases lenape, a menudo sustituyendo su historia.",
+      t_c1_c: "Los lenape y los holandeses planificaron la ciudad como socios iguales.",
+      t_c1_d: "Los nombres lenape originales de todas las calles principales se siguen usando en la actualidad.",
+      t_fig2: "Ceremonia de sanación en 2009 entre comunidades lenape y la Collegiate Church.",
+      t_c2_title: "2) Identidad lenape y territorio",
+      t_c2_p1:
+        "“Tenemos una historia allí antes de que llegara el hombre blanco, pero los lenape han sido olvidados porque no han tenido presencia allí durante siglos”, dice <strong>Curtis Zunigha</strong>, líder del <strong>Lenape Center</strong> en Manhattan. El centro apoya la cultura lenape. Sin embargo, el Sr. Zunigha vive en <strong>Oklahoma</strong>, porque muchos lenape fueron obligados a mudarse allí hace mucho.",
+      t_c2_p2:
+        "El territorio original lenape, llamado <strong>Lenapehoking</strong>, abarcaba partes de la actual Nueva York, Nueva Jersey, Pensilvania y Delaware. Hoy, las dos tribus reconocidas oficialmente por el gobierno como Delaware (otro nombre para los lenape) están en Oklahoma.",
+      t_c2_gateTitle: "Afirmación y evidencia",
+      t_c2_prompt:
+        "Muchos lenape viven lejos de NYC, pero su vínculo con su territorio sigue siendo fuerte. ¿Qué evidencia apoya mejor esta afirmación?",
+      t_c2_a: "No queda nadie con herencia lenape viviendo en el área de Nueva York.",
+      t_c2_b: "Los lenape han olvidado todos sus lazos históricos con la isla de Manhattan.",
+      t_c2_c: "El Lenape Center, con sede en Manhattan, trabaja para mantener viva la cultura hoy.",
+      t_c2_d: "Líderes lenape en Oklahoma han dicho que no les interesa su historia.",
+      t_c3_title: "3) Rutas de migración y estigma",
+      t_c3_p1:
+        "Los lenape fueron expulsados de su territorio a lo largo de muchos años. Primero se mudaron a Pensilvania, luego a Ohio e Indiana, después a Misuri y luego a Kansas. Tras la Guerra Civil, el gobierno de Estados Unidos obligó a los lenape en Kansas a vender su tierra para construir el ferrocarril. Luego se trasladaron a <strong>Oklahoma</strong>, donde muchos viven hoy.",
+      t_c3_p2:
+        "Algunas personas lenape sí permanecieron en su territorio original. La familia de <strong>Margaret Boldeagle</strong> es un ejemplo. Ella dice que muchas familias sintieron presión para <strong>asimilarse</strong>, es decir, encajar en la nueva cultura. Explica que por la <strong>discriminación</strong> algunas personas ocultaron su identidad nativa. “Antes, había un estigma por ser nativo”, dice. “Así que muchas familias no lo admitían”.",
+      t_c3_gateTitle: "Causa y efecto",
+      t_c3_prompt:
+        "El texto menciona un “estigma por ser nativo”. ¿Cuál fue un resultado directo de ese trato injusto y de la presión por asimilarse?",
+      t_c3_a: "El gobierno de EE. UU. celebró y reconoció a todas las tribus locales.",
+      t_c3_b: "Provocó un gran período de paz y celebraciones culturales compartidas para todos.",
+      t_c3_c: "Muchas familias lenape ocultaron su herencia para evitar el maltrato.",
+      t_c3_d: "Los colonos europeos empezaron a adoptar la ropa tradicional lenape.",
+      t_c4_title: "4) Monumentos y la historia de Manhattan",
+      t_c4_p1:
+        "Hoy hay dos memoriales en la ciudad de Nueva York que mencionan a los lenape, pero ambos cuentan una historia que no es del todo correcta. Un monumento en Battery Park y una placa en Inwood Hill Park conmemoran la <strong>“venta de Manhattan”</strong>, perpetuando un mito que muchos expertos consideran inventado.",
+      t_c4_p2:
+        "La placa en Inwood Hill Park incluso afirma que el trato ocurrió allí, aunque probablemente se cerró en el Fuerte Ámsterdam, en el bajo Manhattan. Lo más importante: expertos sostienen que los lenape vieron el acuerdo como <strong>uso compartido</strong> de la tierra, no como venta definitiva. Los holandeses lo vieron como venta final. Actas de 1660 muestran que los holandeses estaban frustrados porque los lenape no se iban. Los lenape respondieron que solo habían vendido la hierba, no la tierra.",
+      t_c4_gateTitle: "Punto de vista",
+      t_c4_prompt:
+        "El texto describe un gran desacuerdo sobre la “venta de Manhattan”. ¿Cuál es la diferencia clave entre los puntos de vista lenape y holandés?",
+      t_c4_a: "Ambos acordaron devolver la tierra después de algunos años.",
+      t_c4_b: "Los lenape querían vender la tierra, pero los holandeses solo querían arrendarla.",
+      t_c4_c: "Los holandeses lo vieron como venta única; los lenape como acuerdo para compartir.",
+      t_c4_d: "El trato solo trataba de pieles y no tenía nada que ver con la tierra.",
+      t_c5_title: "5) Lengua y continuidad cultural",
+      t_c5_p1:
+        "Aunque los monumentos cuenten una historia antigua, la cultura lenape sigue viva hoy. En Oklahoma, la Tribu Delaware organiza campamentos para que los niños aprendan <strong>prácticas espirituales lenape</strong>, cantos y danzas. También han trabajado para salvar la lengua lenape, que está en peligro porque hay pocos hablantes fluidos.",
+      t_c5_p2:
+        "<strong>Jim Rementer</strong> ha estudiado la lengua por más de 50 años. Ayudó a crear el <strong>Lenape Talking Dictionary</strong>, con lecciones y audio en línea. Aunque hoy no hay hablantes nativos en Oklahoma, dice que la gente sigue interesada en aprender. Explica que usar su lengua en oraciones y ceremonias conecta a la comunidad con su cultura y sus ancestros, y la mantiene fuerte para la próxima generación.",
+      t_c5_gateTitle: "Idea central",
+      t_c5_prompt:
+        "A pesar de haber sido expulsados de su hogar, la cultura lenape ha sobrevivido. ¿Qué detalle prueba mejor esta continuidad cultural?",
+      t_c5_a: "Los monumentos modernos de NYC cuentan toda la historia lenape con precisión.",
+      t_c5_b: "El área de Wall Street ahora es un centro financiero global muy importante.",
+      t_c5_c: "Los caminos lenape originales ya no se ven en ningún lugar de Manhattan.",
+      t_c5_d: "Los campamentos culturales y el Lenape Talking Dictionary preservan tradiciones y lengua.",
+      t_refTitle: "Reflexión SEL y respuesta R.A.C.E.",
+      t_refIntro1:
+        "Haz una pausa consciente para conectar con la historia lenape y con tu comunidad. Responde usando la <strong>estrategia R.A.C.E.</strong>: <strong>R</strong>epite la pregunta, <strong>A</strong>nswer/Responde con claridad, <strong>C</strong>ita evidencia del artículo y <strong>E</strong>xplícalo.",
+      t_refPrompt:
+        "Consigna: <em>¿Cómo influye aprender sobre la resiliencia de los lenape y su cuidado por la tierra en la forma en que apoyas y empatizas con otros en tu vida?</em>",
+      t_refFieldLabel: "Escribe tu párrafo R.A.C.E. (no se permite pegar):",
+      t_typingOnly: "Solo escribir. Pegar está deshabilitado para asegurar que sea tu propio pensamiento.",
+      t_savedMsg: "Tu trabajo se guarda en este Chromebook hasta que envíes.",
+      t_submitAll: "Enviar todo",
+      t_checkConn: "Comprobar conexión",
+      t_raceRemindTitle: "Recordatorio rápido de R.A.C.E.",
+      t_raceRemindP1:
+        'Empieza con <strong>una oración</strong> que repita la consigna y dé tu respuesta. Ejemplo: <em>"La pregunta pide cómo ayuda el trabajo en equipo, y ayuda porque compartimos tareas y nos animamos".</em>',
+      t_raceRemindP2:
+        "Después, incluye evidencia del artículo y explica cómo se conecta con tus acciones o sentimientos.",
+      t_raceRubricTitle: "Rúbrica del párrafo R.A.C.E.",
+      t_raceRubricIntro: "Marca cada casilla para que tu párrafo destaque.",
+      t_r1: "<strong>Repite y responde:</strong> Abre con la consigna en tus palabras y responde claro en esa misma oración.",
+      t_r2: "<strong>Evidencia:</strong> Incluye un dato o cita concreta del artículo.",
+      t_r3: "<strong>Explicación:</strong> Conecta la evidencia con tus experiencias, sentimientos o acciones.",
+      t_r4: "<strong>Escritura:</strong> Usa oraciones completas, conectores y un cierre positivo.",
+      t_footer: "© Northside Charter High School • Preparación para Regents de Historia de EE. UU.",
+      t_checkBtn_1: "Revisar", t_attemptsLabel_1: "Intentos:",
+      t_checkBtn_2: "Revisar", t_attemptsLabel_2: "Intentos:",
+      t_checkBtn_3: "Revisar", t_attemptsLabel_3: "Intentos:",
+      t_checkBtn_4: "Revisar", t_attemptsLabel_4: "Intentos:",
+      t_checkBtn_5: "Revisar", t_attemptsLabel_5: "Intentos:"
+    },
+
+    ar: {
+      t_studentInfo: "معلومات الطالب",
+      t_nameLabel: "اسم الطالب (الاسم الأول، اسم العائلة)",
+      t_timeLabel: "التوقيت (الساحل الشرقي)",
+      t_periodLabel: "الحصة",
+      t_savedNote: "يُحفَظ التقدم على هذا الـ Chromebook للاستخدام لاحقًا.",
+      t_guidedReading: "وضع القراءة الموجَّهة",
+      t_alwaysOn: "القراءة الموجَّهة مفعّلة دائمًا. يتم حفظ التقدم على هذا الجهاز.",
+      t_articleTitle: "السكان الأصليون الحقيقيون لمدينة نيويورك لا يستطيعون استعادة وطنهم بالكامل",
+      t_articleDek:
+        "بعد ما يقرب من 400 عام على قصة “بيع مانهاتن”، يعمل بعض شعب اللينابي على استعادة تراثهم الثقافي في المكان الذي عاش فيه أسلافهم.",
+      t_bylineName: "كولين كونولي",
+      t_bylineRole: "مراسلة",
+      t_bylineDate: "5 أكتوبر 2018",
+      t_fig1: 'نُصُب في جنوب مانهاتن يخلّد <strong>“بيع” أراضي اللينابي</strong>.',
+      t_c1_title: "1) اتصال مبكر وأسطورة قوية",
+      t_c1_p1:
+        "عندما وصل <strong>الهولنديون</strong> في القرن السابع عشر، كانت معاملاتهم مع السكان الأصليين <strong>اللينابي</strong> ودّية في الغالب. تبادلوا السلع وتقاسموا الأرض. وتقول قصة معروفة إن الهولنديين <strong>“اشتروا” جزيرة مناهاتا عام 1626</strong>. لكن ذلك الاتفاق، والجدار الذي بناه الهولنديون لاحقًا حول <strong>نيو أمستردام</strong>، كان بداية <strong>التهجير القسري</strong> للينابي عن وطنهم.",
+      t_c1_p2:
+        "صار ذلك الجدار الدفاعي لاحقًا <strong>وول ستريت</strong> الشهيرة. ومسار لينابي اسمه <strong>ويككواسجيك</strong> صار طريقًا هولنديًا ثم <strong>برودواي</strong>. ساهم اللينابي في تخطيط مدينة نيويورك، لكن كثيرًا من آثار تاريخهم اختفى تقريبًا. واليوم يعمل بعضهم على إعادة تراثهم إلى المدينة.",
+      t_c1_gateTitle: "السياق التاريخي",
+      t_c1_prompt:
+        "يذكر النص أن مسارًا لينابي أصبح برودواي وأن جدارًا هولنديًا أصبح وول ستريت. ماذا يخبرنا هذا عن كيفية بناء نيويورك؟",
+      t_c1_a: "بنى الهولنديون مدينتهم منفصلة تمامًا عن أي تجمعات للينابي.",
+      t_c1_b: "نمت المدينة فوق أسس لينابية، وغالبًا ما استبدلت تاريخهم.",
+      t_c1_c: "خطط اللينابي والهولنديون المدينة معًا كشركاء متساوين.",
+      t_c1_d: "ما زالت الأسماء اللينابية الأصلية لجميع الشوارع الرئيسية مستخدمة حتى اليوم.",
+      t_fig2: "مراسم شفاء عام 2009 بين مجتمعات اللينابي وكنيسة Collegiate.",
+      t_c2_title: "2) هوية اللينابي ووطنهم",
+      t_c2_p1:
+        "يقول <strong>كيرتِس زونيغا</strong>، وهو قائد في <strong>مركز اللينابي</strong> بمانهاتن: “لدينا تاريخ هناك قبل وصول الرجل الأبيض، لكن تم نسيان اللينابي لأن وجودهم انقطع منذ قرون”. يعمل المركز على دعم ثقافة اللينابي. إلا أن زونيغا يعيش في <strong>أوكلاهوما</strong> لأن الكثير من اللينابي أُجبروا على الانتقال إلى هناك منذ زمن.",
+      t_c2_p2:
+        "كان وطن اللينابي الأصلي، <strong>لينابيهُوكينغ</strong>، منطقة واسعة تضم أجزاء من نيويورك ونيوجيرسي وبنسلفانيا وديلاوير. واليوم تقع القبيلتان المعترف بهما رسميًا باسم “ديلاوير” في أوكلاهوما.",
+      t_c2_gateTitle: "الادعاء والدليل",
+      t_c2_prompt:
+        "يعيش كثير من اللينابي بعيدًا عن نيويورك، لكن ارتباطهم بوطنهم ما يزال قويًا. أي دليل يدعم هذا الادعاء أفضل دعم؟",
+      t_c2_a: "لا يوجد أحد من ذوي الأصل اللينابي يعيش في منطقة نيويورك.",
+      t_c2_b: "نسي اللينابي كل صلاتهم التاريخية بجزيرة مانهاتن.",
+      t_c2_c: "يعمل مركز اللينابي في مانهاتن اليوم على إبقاء الثقافة حيّة.",
+      t_c2_d: "صرّح قادة لينابي في أوكلاهوما بعدم اهتمامهم بتاريخهم.",
+      t_c3_title: "3) مسارات الهجرة والوصم",
+      t_c3_p1:
+        "دُفع اللينابي بعيدًا عن وطنهم عبر سنوات طويلة. انتقلوا أولًا إلى بنسلفانيا، ثم أوهايو وإنديانا، ثم ميزوري، ثم كانساس. بعد الحرب الأهلية، أجبرت الحكومة الأميركية اللينابي في كانساس على بيع أرضهم لبناء السكك الحديدية، ثم انتقلوا إلى <strong>أوكلاهوما</strong> حيث يعيش كثيرون اليوم.",
+      t_c3_p2:
+        "بقي بعض اللينابي في موطنهم الأصلي. عائلة <strong>مارغريت بولديغل</strong> مثال على ذلك. تقول إن كثيرًا من العائلات شعرت بضغط كي <strong>تندمج</strong> مع الثقافة الجديدة. وتشرح أنه بسبب <strong>التمييز</strong> أخفى بعض الناس هويتهم الأصلية. وتقول: “في الماضي كان هناك وصمة لكونك أصليًا. لذلك لم تعترف عائلات كثيرة بذلك”.",
+      t_c3_gateTitle: "السبب والنتيجة",
+      t_c3_prompt:
+        'يذكر النص وجود "وصمة لكونك أصليًا". ما النتيجة المباشرة لهذا الظلم والضغط نحو الاندماج؟',
+      t_c3_a: "احتفلت الحكومة الأميركية بكل القبائل الأصلية المحلية واعترفت بها.",
+      t_c3_b: "أدى ذلك إلى فترة سلام كبيرة واحتفالات ثقافية مشتركة للجميع.",
+      t_c3_c: "اضطرت عائلات لينابية كثيرة إلى إخفاء تراثها لتجنب الإساءة.",
+      t_c3_d: "بدأ المستوطنون الأوروبيون بارتداء اللباس التقليدي للينابي.",
+      t_c4_title: "4) النُّصُب وقصة مانهاتن",
+      t_c4_p1:
+        "تذكر نُصُبان في نيويورك شعب اللينابي، لكن كليهما يروي قصة غير دقيقة تمامًا. يخلّد نُصُب في Battery Park ولوحة في Inwood Hill Park <strong>“بيع مانهاتن”</strong>، مما يواصل أسطورة يقول خبراء كثيرون إنها قصة ملفّقة.",
+      t_c4_p2:
+        "تدّعي اللوحة في Inwood Hill أن الصفقة حدثت هناك، مع أنها غالبًا أُبرمت في حصن أمستردام بجنوب مانهاتن. والأهم أن الخبراء يرون أن اللينابي اعتبروا الاتفاق <strong>تقاسمًا للأرض</strong> لا بيعًا دائمًا، بينما رآه الهولنديون بيعًا نهائيًا. تُظهر ملاحظات مجلس عام 1660 أن الهولنديين كانوا محبطين لأن اللينابي لم يغادروا. وردّ اللينابي بأنهم باعوا العشب فقط لا الأرض نفسها.",
+      t_c4_gateTitle: "وجهة النظر",
+      t_c4_prompt:
+        "يصف النص خلافًا كبيرًا حول “بيع مانهاتن”. ما الفرق الأساسي بين وجهتَي نظر اللينابي والهولنديين؟",
+      t_c4_a: "اتفق الطرفان على إعادة الأرض بعد بضع سنوات.",
+      t_c4_b: "أراد اللينابي بيع الأرض بينما أراد الهولنديون استئجارها فقط.",
+      t_c4_c: "رآه الهولنديون بيعًا واحدًا، بينما رآه اللينابي اتفاقًا على المشاركة.",
+      t_c4_d: "كان الاتفاق متعلقًا بالفراء فقط ولا علاقة له بالأرض.",
+      t_c5_title: "5) اللغة واستمرار الثقافة",
+      t_c5_p1:
+        "حتى لو روت النُّصُب قصة قديمة، تبقى ثقافة اللينابي حيّة اليوم. في أوكلاهوما، تستضيف قبيلة ديلاوير مخيمات للأطفال لتعلّم <strong>الممارسات الروحية اللينابيّة</strong> والأغاني والرقصات. كما عملوا جاهدين لإنقاذ لغة اللينابي المهددة بسبب قلّة المتحدثين بها بطلاقة.",
+      t_c5_p2:
+        "<strong>جيم ريمِنتر</strong> درس اللغة لأكثر من خمسين عامًا، وساعد في إنشاء <strong>قاموس لينابي الناطق</strong> الذي يقدّم دروسًا مع صوت عبر الإنترنت. ورغم عدم وجود متحدثين أصليين اليوم في أوكلاهوما، يقول إن الإقبال على التعلّم مستمر. ويوضح أن استخدام اللغة الأصلية في الصلوات والمراسم يصل الناس بثقافتهم وأسلافهم ويحافظ عليها قوية للأجيال القادمة.",
+      t_c5_gateTitle: "الفكرة المركزية",
+      t_c5_prompt:
+        "رغم تهجيرهم من ديارهم، فقد بقيت ثقافة اللينابي. أي تفصيل يبرهن ذلك بشكل أفضل؟",
+      t_c5_a: "تروي النُّصُب الحديثة في نيويورك تاريخ اللينابي كاملًا وبدقة.",
+      t_c5_b: "أصبحت منطقة وول ستريت مركزًا ماليًا عالميًا مهمًا.",
+      t_c5_c: "لم تعد مسارات اللينابي الأصلية ظاهرة في مانهاتن الحديثة.",
+      t_c5_d: "تحافظ المخيمات الثقافية وقاموس لينابي الناطق على التقاليد واللغة.",
+      t_refTitle: "انعكاس مهارات SEL واستجابة R.A.C.E.",
+      t_refIntro1:
+        "توقف قليلًا لتتصل بقصة اللينابي ومجتمعك. أجب باستخدام <strong>استراتيجية R.A.C.E.</strong>: أعد صياغة السؤال، ثم أجب بوضوح، ثم استشهد بدليل من المقال، ثم اشرح دلالته.",
+      t_refPrompt:
+        "السؤال: <em>كيف يؤثر تعلّمك عن صمود شعب اللينابي وحرصهم على أرضهم في طريقتك في دعم الآخرين والتعاطف معهم؟</em>",
+      t_refFieldLabel: "اكتب فقرتك وفق R.A.C.E. (لا يُسمح باللصق):",
+      t_typingOnly: "الكتابة فقط. تم تعطيل اللصق لضمان أن هذا من تفكيرك.",
+      t_savedMsg: "يُحفَظ عملك على هذا الـ Chromebook حتى تضغط إرسال.",
+      t_submitAll: "إرسال كل العمل",
+      t_checkConn: "فحص الاتصال",
+      t_raceRemindTitle: "تذكير سريع باستراتيجية R.A.C.E.",
+      t_raceRemindP1:
+        'ابدأ بـ <strong>جملة واحدة</strong> تعيد صياغة السؤال وتقدّم إجابتك. مثال: <em>"السؤال عن كيف يساعد العمل الجماعي صفنا، وهو يساعد لأننا نتقاسم المهام وندعم بعضنا".</em>',
+      t_raceRemindP2:
+        "بعد ذلك أدرج دليلًا من المقال واشرح كيف يتصل بتصرفاتك أو مشاعرك.",
+      t_raceRubricTitle: "سلم تقييم فقرة R.A.C.E.",
+      t_raceRubricIntro: "تحقق من كل بند لتجعل فقرتك مميزة.",
+      t_r1: "<strong>إعادة الصياغة والإجابة:</strong> ابدأ بالسؤال بكلماتك وقدّم الإجابة بوضوح في الجملة نفسها.",
+      t_r2: "<strong>الدليل:</strong> أدرج حقيقة محددة أو اقتباسًا من المقال.",
+      t_r3: "<strong>الشرح:</strong> صِل الدليل بتجاربك أو مشاعرك أو تصرفاتك.",
+      t_r4: "<strong>مهارات الكتابة:</strong> استخدم جملًا تامة وروابط واختتامًا إيجابيًا.",
+      t_footer: "© مدرسة نورثسايد تشارتر الثانوية • الاستعداد لاختبار ريجنتس لتاريخ الولايات المتحدة",
+      t_checkBtn_1: "تحقق", t_attemptsLabel_1: "المحاولات:",
+      t_checkBtn_2: "تحقق", t_attemptsLabel_2: "المحاولات:",
+      t_checkBtn_3: "تحقق", t_attemptsLabel_3: "المحاولات:",
+      t_checkBtn_4: "تحقق", t_attemptsLabel_4: "المحاولات:",
+      t_checkBtn_5: "تحقق", t_attemptsLabel_5: "المحاولات:"
+    }
+  };
+
+  /* ========= apply translations ========= */
+  function setLang(lang) {
+    const map = I18N[lang] || I18N.en;
+    // lang + direction
+    document.documentElement.lang = lang;
+    const isRTL = (lang === "ar");
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+
+    // write all keys that exist on the page
+    Object.entries(map).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      // many strings contain <strong> etc, so use innerHTML
+      el.innerHTML = value;
+    });
+  }
+
+  /* ========= UI wiring ========= */
+  (function initLangUI(){
+    const select = document.getElementById("langSelect");
+    if (!select) return;
+    // default to English
+    setLang("en");
+    select.addEventListener("change", () => setLang(select.value));
   })();
   </script>
 </body>
