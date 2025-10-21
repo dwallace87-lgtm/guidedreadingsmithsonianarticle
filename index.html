@@ -73,6 +73,75 @@
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    /* —— Translation controls —————————————————————————— */
+    .translate-controls { position: relative; }
+    .translate-button {
+      border: 1px solid rgba(255,255,255,.4);
+      background: rgba(255,255,255,.18);
+      color: #fff;
+      padding: .4rem .9rem;
+      border-radius: .5rem;
+      font-weight: 600;
+      transition: background .2s ease, color .2s ease;
+    }
+    .translate-button:hover,
+    .translate-button:focus-visible {
+      background: rgba(255,255,255,.28);
+      color: #fff;
+      outline: none;
+    }
+    .translate-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + .5rem);
+      min-width: 13rem;
+      background: #fff;
+      color: #111827;
+      border-radius: .75rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,.18);
+      border: 1px solid rgba(17,24,39,.08);
+      padding: .4rem;
+      display: none;
+      z-index: 70;
+    }
+    .translate-menu.show { display: block; }
+    .translate-menu button {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      width: 100%;
+      font-size: .95rem;
+      padding: .45rem .6rem;
+      border-radius: .55rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: inherit;
+      font-weight: 600;
+    }
+    .translate-menu button:hover,
+    .translate-menu button:focus-visible {
+      background: #ede9fe;
+      outline: none;
+    }
+    .translate-menu button[data-active="true"] {
+      background: #c7d2fe;
+    }
+    .translate-menu .lang-label {
+      display: block;
+      font-size: .8rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    /* Hide Google Translate default UI */
+    #google_translate_element { position: absolute; left: -9999px; }
+    body > .skiptranslate { display: none !important; }
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    body { top: 0 !important; }
+    .goog-te-gadget-icon { display: none !important; }
+    .goog-te-gadget { font-size: 0 !important; }
+
     /* —— Glossary ————————————————————————————————————— */
     .gloss {
       position: relative;
@@ -162,7 +231,7 @@
 
   <!-- Northside header with logo + Highlighter tools -->
   <header class="bg-gradient-to-r from-purple-700 to-purple-900 text-white">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-6 flex-wrap">
       <div class="flex items-center gap-4">
         <div class="logo-container rounded-md bg-white p-1 shadow-sm">
           <img src="https://northsidechs.org/wp-content/uploads/2023/03/northside-charter-logo-v.png"
@@ -172,16 +241,41 @@
       </div>
 
       <!-- Highlighter toolbar -->
-      <div class="flex items-center gap-3 text-sm" aria-label="Highlighter toolbar">
-        <label class="flex items-center gap-2">
-          <input id="hlToggle" type="checkbox" class="h-4 w-4" aria-checked="true">
-          <span>Highlighter</span>
-        </label>
-        <button class="swatch sw-blue"   id="swBlue"   title="Blue (1)"   aria-label="Blue highlighter"   tabindex="0"></button>
-        <button class="swatch sw-yellow" id="swYellow" title="Yellow (2)" aria-label="Yellow highlighter" tabindex="0"></button>
-        <button class="swatch sw-red"    id="swRed"    title="Red (3)"    aria-label="Red highlighter"    tabindex="0"></button>
-        <button class="swatch sw-eraser" id="swErase"  title="Eraser (4)" aria-label="Eraser"             tabindex="0"></button>
-        <button id="clearHighlights" class="px-3 py-1 rounded-md border border-white/30 hover:bg-white/10">Clear highlights</button>
+      <div class="flex items-center gap-4 text-sm">
+        <div class="flex items-center gap-3 text-sm" aria-label="Highlighter toolbar">
+          <label class="flex items-center gap-2">
+            <input id="hlToggle" type="checkbox" class="h-4 w-4" aria-checked="true">
+            <span>Highlighter</span>
+          </label>
+          <button class="swatch sw-blue"   id="swBlue"   title="Blue (1)"   aria-label="Blue highlighter"   tabindex="0"></button>
+          <button class="swatch sw-yellow" id="swYellow" title="Yellow (2)" aria-label="Yellow highlighter" tabindex="0"></button>
+          <button class="swatch sw-red"    id="swRed"    title="Red (3)"    aria-label="Red highlighter"    tabindex="0"></button>
+          <button class="swatch sw-eraser" id="swErase"  title="Eraser (4)" aria-label="Eraser"             tabindex="0"></button>
+          <button id="clearHighlights" class="px-3 py-1 rounded-md border border-white/30 hover:bg-white/10">Clear highlights</button>
+        </div>
+        <div class="translate-controls" data-active-lang="en">
+          <button type="button" id="translateToggle" class="translate-button" aria-haspopup="true" aria-expanded="false" aria-controls="translateMenu">
+            Translate
+          </button>
+          <div id="translateMenu" class="translate-menu" role="menu">
+            <button type="button" data-lang="en" role="menuitem" data-active="true">
+              English
+              <span class="lang-label">Original language</span>
+            </button>
+            <button type="button" data-lang="es" role="menuitem">
+              Español
+              <span class="lang-label">Spanish</span>
+            </button>
+            <button type="button" data-lang="fr" role="menuitem">
+              Français
+              <span class="lang-label">French</span>
+            </button>
+            <button type="button" data-lang="ar" role="menuitem">
+              العربية
+              <span class="lang-label">Arabic</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -435,8 +529,142 @@
 
   <!-- Toast node -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="google_translate_element" aria-hidden="true"></div>
 
   <script>
+    /* ========== Translation Loader ========== */
+    const translatorManager = (() => {
+      let resolveReady;
+      const readyPromise = new Promise(resolve => { resolveReady = resolve; });
+
+      window.__initGoogleTranslate = function() {
+        if (typeof google === "undefined" || !google.translate) {
+          resolveReady();
+          return;
+        }
+        new google.translate.TranslateElement({
+          pageLanguage: "en",
+          includedLanguages: "ar,es,fr",
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        }, "google_translate_element");
+        resolveReady();
+      };
+
+      const script = document.createElement("script");
+      script.src = "https://translate.google.com/translate_a/element.js?cb=__initGoogleTranslate";
+      script.async = true;
+      script.defer = true;
+      script.addEventListener("error", () => resolveReady());
+      document.head.appendChild(script);
+
+      function withCombo(cb, attempt = 0) {
+        readyPromise.then(() => {
+          const combo = document.querySelector(".goog-te-combo");
+          if (combo) {
+            cb(combo);
+          } else if (attempt < 80) {
+            setTimeout(() => withCombo(cb, attempt + 1), 100);
+          }
+        }).catch(() => {});
+      }
+
+      return { withCombo, readyPromise };
+    })();
+
+    (function initTranslationControls() {
+      const translateControls = document.querySelector(".translate-controls");
+      if (!translateControls) return;
+
+      const toggle = document.getElementById("translateToggle");
+      const menu = document.getElementById("translateMenu");
+      if (!toggle || !menu) return;
+
+      const buttons = Array.from(menu.querySelectorAll("button[data-lang]"));
+      let isMenuOpen = false;
+
+      function setActiveLanguage(lang) {
+        translateControls.dataset.activeLang = lang;
+        buttons.forEach(btn => {
+          if (btn.dataset.lang === lang) {
+            btn.setAttribute("data-active", "true");
+          } else {
+            btn.removeAttribute("data-active");
+          }
+        });
+      }
+
+      function closeMenu() {
+        if (!isMenuOpen) return;
+        isMenuOpen = false;
+        menu.classList.remove("show");
+        toggle.setAttribute("aria-expanded", "false");
+      }
+
+      function openMenu() {
+        if (isMenuOpen) return;
+        isMenuOpen = true;
+        menu.classList.add("show");
+        toggle.setAttribute("aria-expanded", "true");
+        const activeLang = translateControls.dataset.activeLang || "en";
+        const activeButton = menu.querySelector(`button[data-lang="${activeLang}"]`) || buttons[0];
+        if (activeButton) {
+          setTimeout(() => activeButton.focus({ preventScroll: true }), 20);
+        }
+      }
+
+      toggle.addEventListener("click", () => {
+        if (isMenuOpen) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!translateControls.contains(event.target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && isMenuOpen) {
+          event.preventDefault();
+          closeMenu();
+          toggle.focus();
+        }
+      });
+
+      menu.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeMenu();
+          toggle.focus();
+        }
+      });
+
+      function applyLanguage(lang) {
+        setActiveLanguage(lang);
+        const targetLang = lang === "en" ? "" : lang;
+        translatorManager.withCombo(combo => {
+          if (combo.value === targetLang) return;
+          combo.value = targetLang;
+          combo.dispatchEvent(new Event("change"));
+        });
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const lang = btn.dataset.lang;
+          applyLanguage(lang);
+          closeMenu();
+          toggle.focus();
+        });
+      });
+
+      setActiveLanguage(translateControls.dataset.activeLang || "en");
+    })();
+
     /* ========== Utility: Toast ========== */
     const toastEl = document.getElementById("toast");
     let toastTimer = null;
