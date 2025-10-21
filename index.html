@@ -620,63 +620,48 @@
       ];
     }
 
+    // ---- NEW: resilient posting with no-cors first ----
     async function postToSheet(row) {
       if (!Array.isArray(row) || !row.length) return false;
 
-      const tryPost = async (options = {}) => {
-        try {
-          const res = await fetch(ENDPOINT_URL, {
-            method: "POST",
-            mode: "cors",
-            redirect: "follow",
-            ...options
-          });
-
-          if (res.type === "opaqueredirect" || res.type === "opaque") {
-            console.info("Sheet submission received opaque response; assuming success.");
-            return true;
-          }
-
-          if (!res.ok) {
-            const text = await res.text().catch(() => "");
-            console.warn("Sheet submission responded with", res.status, text);
-            return false;
-          }
-
-          return true;
-        } catch (err) {
-          console.error("Failed to post to sheet", err);
-          return false;
-        }
-      };
-
-      const jsonBody = JSON.stringify({ row });
-      const jsonOk = await tryPost({
-        headers: { "Content-Type": "application/json" },
-        body: jsonBody
-      });
-      if (jsonOk) return true;
-
-      const formBody = new URLSearchParams({ row: JSON.stringify(row) });
-      const formOk = await tryPost({
-        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-        body: formBody.toString()
-      });
-      if (formOk) return true;
-
-      if (navigator.sendBeacon) {
-        try {
-          const blob = new Blob([formBody.toString()], { type: "application/x-www-form-urlencoded;charset=UTF-8" });
-          if (navigator.sendBeacon(ENDPOINT_URL, blob)) {
-            console.info("Sheet submission queued via sendBeacon.");
-            return true;
-          }
-        } catch (err) {
-          console.error("sendBeacon fallback failed", err);
-        }
+      // 1) Fire-and-forget form-encoded with no-cors (works with Apps Script)
+      try {
+        const formBody = new URLSearchParams({ row: JSON.stringify(row) });
+        const res = await fetch(ENDPOINT_URL, {
+          method: "POST",
+          mode: "no-cors", // avoid CORS preflight; response will be opaque
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body: formBody.toString(),
+          redirect: "follow"
+        });
+        // Treat opaque as success (we can't read body in no-cors)
+        if (res.type === "opaque" || res.type === "opaqueredirect") return true;
+        if (res.ok) return true;
+      } catch (err) {
+        console.warn("Form-encoded no-cors failed:", err);
       }
 
-      return false;
+      // 2) Optional JSON attempt if CORS is allowed
+      try {
+        const jsonBody = JSON.stringify({ row });
+        const res2 = await fetch(ENDPOINT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "application/json" },
+          body: jsonBody,
+          redirect: "follow"
+        });
+
+        if (res2.type === "opaque" || res2.type === "opaqueredirect") return true;
+        if (res2.ok) return true;
+
+        const t = await res2.text().catch(() => "");
+        console.warn("JSON CORS attempt not ok:", res2.status, t);
+        return false;
+      } catch (e2) {
+        console.warn("JSON CORS attempt errored:", e2);
+        return false;
+      }
     }
 
     const reflectionForm = document.getElementById("submissionForm");
@@ -869,6 +854,7 @@
       });
     });
 
+    // Connection check button
     document.getElementById("pingEndpoint")?.addEventListener("click", () => {
       const status = document.getElementById("pingStatus");
       status.textContent = "Pinging…";
@@ -1055,6 +1041,7 @@
       });
       localStorage.removeItem(HL_KEY);
     }
+    const clearBtn = document.getElementById("clearHighlights");
     clearBtn?.addEventListener("click", clearAllHighlights);
 
     // Restore saved highlights
