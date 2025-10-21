@@ -381,7 +381,13 @@
         <p class="text-xs text-gray-600">Typing only—pasting is disabled to make sure this is your own thinking.</p>
         <div class="flex items-center justify-between gap-4 flex-col sm:flex-row">
           <p class="text-sm text-gray-700">Your work stays saved on this Chromebook until you press Submit.</p>
-          <button type="submit" class="nx-btn px-4 py-2 rounded-md shadow">Submit All Work</button>
+          <div class="flex items-center gap-2">
+            <button type="submit" class="nx-btn px-4 py-2 rounded-md shadow">Submit All Work</button>
+            <button type="button" id="pingEndpoint" class="px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50 text-sm">
+              Check connection
+            </button>
+            <span id="pingStatus" class="text-sm ml-2"></span>
+          </div>
         </div>
         <p id="submitStatus" class="text-sm" role="status" aria-live="polite"></p>
       </form>
@@ -410,7 +416,7 @@
     /* ========== Guided Reading (always ON) ========== */
     const article = document.getElementById("articleRoot");
     const KEY = "lenape-guided-reading-progress-v3";
-    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxv2xbuzRBk1of6paWb5Lq1id2cyEQV4qQhHlvbromUYqHSRGAHRTSNG81IKa2em_6VOw/exec";
+    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbwsc5YkOZWBEIyn3SAYQRlppY5z7A3aRLknz-QQcpKnuUODhcY-xYAWHIk8UvkeD3QB/exec";
     const ASSIGNMENT_NAME = "1021 Native American Article";
     const DEVICE_ID_STORAGE_KEY = "lenape-guided-reading-device-id";
     const SUBMISSION_PREFIX = "LENAPE";
@@ -559,33 +565,58 @@
     function buildSubmissionRow(currentProgress, reflectionText) {
       const profile = currentProgress?.profile || {};
       const attempts = currentProgress?.attempts || {};
-      const totalChunks = chunks.length;
-      const attemptCounts = Array.from({ length: totalChunks }, (_, idx) => Number(attempts[`q${idx + 1}`] || 0));
-      const completedChunks = Array.from({ length: totalChunks }, (_, idx) => Boolean(currentProgress?.[idx + 1]));
-      const correctFlags = completedChunks.map(Boolean);
+
+      // Attempts per question
+      const a1 = Number(attempts.q1 || 0);
+      const a2 = Number(attempts.q2 || 0);
+      const a3 = Number(attempts.q3 || 0);
+      const a4 = Number(attempts.q4 || 0);
+      const a5 = Number(attempts.q5 || 0);
+
+      // A chunk is correct when it is marked true in progress
+      const c1 = Boolean(currentProgress[1] === true);
+      const c2 = Boolean(currentProgress[2] === true);
+      const c3 = Boolean(currentProgress[3] === true);
+      const c4 = Boolean(currentProgress[4] === true);
+      const c5 = Boolean(currentProgress[5] === true);
+
+      const chunksCompleted = [c1,c2,c3,c4,c5].filter(Boolean).length;
+      const totalAttempts = a1 + a2 + a3 + a4 + a5;
+      const scoreCorrect = chunksCompleted;
+      const scorePercent = Math.round((scoreCorrect / 5) * 100);
+
       const response = typeof reflectionText === "string" ? reflectionText : "";
+      const reflectionWords = countWords(response);
+      const reflectionChars = response.length;
+
       const submissionId = currentProgress?.submissionId || createSubmissionId();
-      const submittedAt = currentProgress?.submittedAt || new Date().toISOString();
+      const submittedAtISO = currentProgress?.submittedAt || new Date().toISOString();
       const deviceId = currentProgress?.deviceId || getOrCreateDeviceId();
 
-      if (currentProgress && !currentProgress.submissionId) currentProgress.submissionId = submissionId;
-      if (currentProgress && !currentProgress.deviceId) currentProgress.deviceId = deviceId;
+      if (!currentProgress.submissionId) currentProgress.submissionId = submissionId;
+      if (!currentProgress.deviceId) currentProgress.deviceId = deviceId;
 
+      // This is already maintained by your clock code
+      const submittedAtET = profile.timestampEastern || "";
+
+      // Order must match your Google Sheet header
       return [
-        submissionId,
-        submittedAt,
-        profile.studentName || "",
-        profile.timestampEastern || "",
-        profile.period || "",
-        profile.teacherName || profile.teacher || "",
-        profile.assignmentName || ASSIGNMENT_NAME,
-        deviceId,
-        ...attemptCounts,
-        ...correctFlags,
-        ...completedChunks,
-        countWords(response),
-        response.length,
-        response
+        submissionId,                  // submission_id
+        submittedAtISO,                // submitted_at_iso
+        submittedAtET,                 // submitted_at_et
+        profile.studentName || "",     // student_name
+        profile.period || "",          // period
+        deviceId,                      // device_id
+        profile.assignmentName || ASSIGNMENT_NAME, // assignment
+        a1,a2,a3,a4,a5,                // q*_attempts
+        c1,c2,c3,c4,c5,                // q*_correct
+        chunksCompleted,               // chunks_completed
+        totalAttempts,                 // total_attempts
+        scoreCorrect,                  // score_correct
+        scorePercent,                  // score_percent
+        reflectionWords,               // reflection_words
+        reflectionChars,               // reflection_chars
+        response                       // reflection_text
       ];
     }
 
@@ -836,6 +867,18 @@
           submitStatus.className = "text-sm text-yellow-700";
         }
       });
+    });
+
+    document.getElementById("pingEndpoint")?.addEventListener("click", () => {
+      const status = document.getElementById("pingStatus");
+      status.textContent = "Pinging…";
+      postToSheet([
+        "PING-"+Date.now(),"","", "","", "","PING",
+        0,0,0,0,0, false,false,false,false,false,
+        0,0,0,0, 0,0, "ping"
+      ])
+      .then(ok => { status.textContent = ok ? "Connected" : "No response"; })
+      .catch(() => { status.textContent = "Error"; });
     });
 
     /* ========== Teacher Unlock: hold Shift+L for 3s ========== */
