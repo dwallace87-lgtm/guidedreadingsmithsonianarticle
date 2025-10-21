@@ -725,6 +725,26 @@
 
     const reflectionForm = document.getElementById("submissionForm");
     const reflectionField = document.getElementById("reflectionResponse");
+    const submitButton = document.getElementById("t_submitAll");
+
+    function setSubmissionLocked(isLocked) {
+      if (reflectionField) {
+        reflectionField.readOnly = isLocked;
+        reflectionField.classList.toggle("bg-gray-100", isLocked);
+      }
+      if (submitButton) {
+        submitButton.disabled = isLocked;
+        submitButton.classList.toggle("opacity-50", isLocked);
+        submitButton.classList.toggle("cursor-not-allowed", isLocked);
+      }
+      if (reflectionForm) {
+        if (isLocked) {
+          reflectionForm.setAttribute("aria-disabled", "true");
+        } else {
+          reflectionForm.removeAttribute("aria-disabled");
+        }
+      }
+    }
     const submitStatus = document.getElementById("submitStatus");
 
     function updateAttemptCounters() {
@@ -820,6 +840,16 @@
 
     // Reset progress
     resetBtn?.addEventListener("click", () => {
+      if (progress.submittedAt) {
+        showToast("Submission already sent from this device.");
+        if (submitStatus) {
+          const submittedDate = new Date(progress.submittedAt);
+          submitStatus.textContent = `Already submitted on ${submittedDate.toLocaleString()}. Further submissions from this device are locked.`;
+          submitStatus.className = "text-sm text-green-700";
+        }
+        setSubmissionLocked(true);
+        return;
+      }
       localStorage.removeItem(KEY);
       for (const k in progress) delete progress[k];
       ensureProgressStructures();
@@ -836,6 +866,7 @@
         submitStatus.textContent = "";
         submitStatus.className = "text-sm";
       }
+      setSubmissionLocked(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
       applyBlurFromProgress();
       updateAttemptCounters();
@@ -859,14 +890,27 @@
       });
     }
 
-    if (submitStatus && progress.submittedAt && progress.responses.reflection) {
+    const alreadySubmitted = Boolean(progress.submittedAt);
+    setSubmissionLocked(alreadySubmitted);
+
+    if (submitStatus && alreadySubmitted) {
       const submittedDate = new Date(progress.submittedAt);
-      submitStatus.textContent = `Submitted on ${submittedDate.toLocaleString()}.`;
+      submitStatus.textContent = `Submitted on ${submittedDate.toLocaleString()}. Further submissions from this device are locked.`;
       submitStatus.className = "text-sm text-green-700";
     }
 
     reflectionForm?.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (progress.submittedAt) {
+        if (submitStatus) {
+          const submittedDate = new Date(progress.submittedAt);
+          submitStatus.textContent = `Already submitted on ${submittedDate.toLocaleString()}. Further submissions from this device are locked.`;
+          submitStatus.className = "text-sm text-green-700";
+        }
+        showToast("Already submitted from this device.");
+        setSubmissionLocked(true);
+        return;
+      }
       const responseText = reflectionField?.value.trim() || "";
       if (!responseText) {
         if (submitStatus) {
@@ -880,6 +924,7 @@
       progress.responses.reflection = responseText;
       progress.submittedAt = new Date().toISOString();
       saveProgress();
+      setSubmissionLocked(true);
 
       const completion = chunks.reduce((acc, section) => {
         const n = Number(section.dataset.chunk);
@@ -907,13 +952,13 @@
         if (ok) {
           showToast("Sent to Formspree");
           if (submitStatus) {
-            submitStatus.textContent = "Submitted and recorded (Formspree).";
+            submitStatus.textContent = "Submitted and recorded (Formspree). Further submissions from this device are locked.";
             submitStatus.className = "text-sm text-green-700";
           }
         } else {
           showToast("Could not reach Formspree. Saved locally.");
           if (submitStatus) {
-            submitStatus.textContent = "Saved locally. Try again later.";
+            submitStatus.textContent = "Saved locally on this device. Please show your teacher; submissions are locked.";
             submitStatus.className = "text-sm text-yellow-700";
           }
         }
@@ -921,7 +966,7 @@
         console.error("Formspree submit error", err);
         showToast("Could not reach Formspree. Saved locally.");
         if (submitStatus) {
-          submitStatus.textContent = "Saved locally. Try again later.";
+          submitStatus.textContent = "Saved locally on this device. Please show your teacher; submissions are locked.";
           submitStatus.className = "text-sm text-yellow-700";
         }
       });
