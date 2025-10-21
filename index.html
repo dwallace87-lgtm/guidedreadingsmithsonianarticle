@@ -150,8 +150,8 @@
       <label class="block text-sm">Student Name
         <input id="siName" class="mt-1 w-full border rounded p-2" placeholder="Last, First" />
       </label>
-      <label class="block text-sm">Student Email
-        <input id="siEmail" class="mt-1 w-full border rounded p-2" placeholder="s100234@nchs.org" />
+      <label class="block text-sm">Timestamp (Eastern)
+        <input id="siTimestamp" class="mt-1 w-full border rounded p-2 bg-gray-100" aria-live="polite" readonly />
       </label>
       <label class="block text-sm">Period
         <input id="siPeriod" class="mt-1 w-full border rounded p-2" placeholder="3" />
@@ -435,6 +435,87 @@
       localStorage.setItem(KEY, JSON.stringify(progress));
     }
 
+    const studentNameInput = document.getElementById("siName");
+    const studentPeriodInput = document.getElementById("siPeriod");
+    const timestampInput = document.getElementById("siTimestamp");
+
+    let profileAdjusted = false;
+    if (progress.profile?.studentEmail) {
+      delete progress.profile.studentEmail;
+      profileAdjusted = true;
+    }
+    if (progress.profile?.classPeriod) {
+      if (!progress.profile.period) {
+        progress.profile.period = progress.profile.classPeriod;
+      }
+      delete progress.profile.classPeriod;
+      profileAdjusted = true;
+    }
+    if (profileAdjusted) saveProgress();
+
+    function updateProfileField(key, value) {
+      if (!progress.profile) return;
+      const clean = typeof value === "string" ? value.trim() : "";
+      if (clean) {
+        progress.profile[key] = clean;
+      } else {
+        delete progress.profile[key];
+      }
+      saveProgress();
+    }
+
+    if (studentNameInput) {
+      studentNameInput.value = progress.profile.studentName || "";
+      studentNameInput.addEventListener("input", () => {
+        updateProfileField("studentName", studentNameInput.value);
+      });
+    }
+
+    if (studentPeriodInput) {
+      studentPeriodInput.value = progress.profile.period || "";
+      studentPeriodInput.addEventListener("input", () => {
+        updateProfileField("period", studentPeriodInput.value);
+      });
+    }
+
+    const easternFormatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+
+    function formatEasternTimestamp(date) {
+      const parts = easternFormatter.formatToParts(date).reduce((acc, part) => {
+        if (part.type !== "literal") acc[part.type] = part.value;
+        return acc;
+      }, {});
+      const dayPeriod = parts.dayPeriod ? ` ${parts.dayPeriod}` : "";
+      return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}${dayPeriod} ET`;
+    }
+
+    function refreshEasternTimestamp() {
+      if (!timestampInput) return;
+      const now = new Date();
+      const display = formatEasternTimestamp(now);
+      if (timestampInput.value !== display) {
+        timestampInput.value = display;
+      }
+      if (progress.profile.timestampEastern !== display) {
+        progress.profile.timestampEastern = display;
+        progress.profile.timestampISO = now.toISOString();
+        saveProgress();
+      }
+    }
+
+    if (timestampInput) {
+      refreshEasternTimestamp();
+      setInterval(refreshEasternTimestamp, 15000);
+    }
+
     ensureIdentifiers();
 
     function ensureIdentifiers() {
@@ -494,8 +575,8 @@
         submissionId,
         submittedAt,
         profile.studentName || "",
-        profile.studentEmail || "",
-        profile.period || profile.classPeriod || "",
+        profile.timestampEastern || "",
+        profile.period || "",
         profile.teacherName || profile.teacher || "",
         profile.assignmentName || ASSIGNMENT_NAME,
         deviceId,
@@ -655,6 +736,9 @@
       localStorage.removeItem(KEY);
       for (const k in progress) delete progress[k];
       ensureProgressStructures();
+      if (studentNameInput) studentNameInput.value = "";
+      if (studentPeriodInput) studentPeriodInput.value = "";
+      if (timestampInput) refreshEasternTimestamp();
       saveProgress();
       document.querySelectorAll(".gate .feedback").forEach(el => el.textContent = "");
       document.querySelectorAll('.attempt-counter').forEach(el => el.textContent = "Attempts: 0");
