@@ -494,17 +494,61 @@
 
     async function postToSheet(row) {
       if (!Array.isArray(row) || !row.length) return false;
-      try {
-        const res = await fetch(ENDPOINT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ row })
-        });
-        return res.ok;
-      } catch (err) {
-        console.error("Failed to post to sheet", err);
-        return false;
+
+      const tryPost = async (options = {}) => {
+        try {
+          const res = await fetch(ENDPOINT_URL, {
+            method: "POST",
+            mode: "cors",
+            redirect: "follow",
+            ...options
+          });
+
+          if (res.type === "opaqueredirect" || res.type === "opaque") {
+            console.info("Sheet submission received opaque response; assuming success.");
+            return true;
+          }
+
+          if (!res.ok) {
+            const text = await res.text().catch(() => "");
+            console.warn("Sheet submission responded with", res.status, text);
+            return false;
+          }
+
+          return true;
+        } catch (err) {
+          console.error("Failed to post to sheet", err);
+          return false;
+        }
+      };
+
+      const jsonBody = JSON.stringify({ row });
+      const jsonOk = await tryPost({
+        headers: { "Content-Type": "application/json" },
+        body: jsonBody
+      });
+      if (jsonOk) return true;
+
+      const formBody = new URLSearchParams({ row: JSON.stringify(row) });
+      const formOk = await tryPost({
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body: formBody.toString()
+      });
+      if (formOk) return true;
+
+      if (navigator.sendBeacon) {
+        try {
+          const blob = new Blob([formBody.toString()], { type: "application/x-www-form-urlencoded;charset=UTF-8" });
+          if (navigator.sendBeacon(ENDPOINT_URL, blob)) {
+            console.info("Sheet submission queued via sendBeacon.");
+            return true;
+          }
+        } catch (err) {
+          console.error("sendBeacon fallback failed", err);
+        }
       }
+
+      return false;
     }
 
     const reflectionForm = document.getElementById("submissionForm");
